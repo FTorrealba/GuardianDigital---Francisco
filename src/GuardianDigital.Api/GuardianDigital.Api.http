@@ -1,0 +1,6 @@
+@GuardianDigital.Api_HostAddress = http://localhost:5051
+
+GET {{GuardianDigital.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
