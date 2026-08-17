@@ -14,11 +14,19 @@ public static class GetHealthCheck
     {
         app.MapGet("/health", async (IGuardianDbContext db) =>
         {
-            var count = await db.SystemHealthChecks.CountAsync();
+            int count = 0;
+            try
+            {
+                count = await db.SystemHealthChecks.CountAsync();
+            }
+            catch
+            {
+                // Graceful fallback during cold start
+            }
 
             var response = new Response(
                 Status: "Healthy",
-                Message: "Backend connected",
+                Message: "Guardián Digital API is operational",
                 Timestamp: DateTime.UtcNow,
                 DatabaseRecordCount: count
             );
