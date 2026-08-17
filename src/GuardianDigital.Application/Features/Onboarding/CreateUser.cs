@@ -81,7 +81,7 @@ public static class CreateUser
     {
         if (string.IsNullOrWhiteSpace(phone)) return false;
         var digits = new string(phone.Where(char.IsDigit).ToArray());
-        return digits.Length >= 8;
+        return digits.Length >= 10;
     }
 
     public static async Task<IResult> HandleAsync(CreateUserRequest request, IGuardianDbContext db)
@@ -92,10 +92,10 @@ public static class CreateUser
             return Results.BadRequest(new { error = "El Documento de Identidad (DNI) debe contener solo números naturales y tener un máximo de 9 dígitos." });
         }
 
-        // 2. Validation: Phone format
+        // 2. Validation: Phone format (prefix +549 + 10 digits)
         if (!IsValidPhone(request.PrimaryPhone))
         {
-            return Results.BadRequest(new { error = "El teléfono principal debe contener el prefijo +549 y exactamente 8 dígitos numéricos." });
+            return Results.BadRequest(new { error = "El teléfono principal debe contener el prefijo +549 y exactamente 10 dígitos numéricos." });
         }
 
         // 3. Validation: Minimum 3 emergency contacts

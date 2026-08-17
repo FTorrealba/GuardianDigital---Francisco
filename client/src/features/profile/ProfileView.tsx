@@ -5,7 +5,7 @@ interface EmergencyContactForm {
   id?: string;
   contactName: string;
   relationship: string;
-  phone8: string;
+  phone10: string;
   preferredMethod: string;
 }
 
@@ -58,7 +58,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [nationalId, setNationalId] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('1960-01-15');
   const [gender, setGender] = useState<string>('Femenino');
-  const [primaryPhone8, setPrimaryPhone8] = useState<string>('');
+  const [primaryPhone10, setPrimaryPhone10] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [healthInsurance, setHealthInsurance] = useState<string>('');
   const [bloodType, setBloodType] = useState<string>('O+');
@@ -75,12 +75,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // Emergency Contacts State
   const [contacts, setContacts] = useState<EmergencyContactForm[]>([]);
 
-  const extract8Digits = (phoneStr: string) => {
+  const extract10Digits = (phoneStr: string) => {
     const digits = (phoneStr || '').replace(/\D/g, '');
-    if (digits.startsWith('549') && digits.length >= 11) {
-      return digits.slice(3, 11);
+    if (digits.startsWith('549') && digits.length >= 13) {
+      return digits.slice(3, 13);
     }
-    return digits.slice(-8);
+    return digits.slice(-10);
   };
 
   const fetchUserData = async () => {
@@ -97,7 +97,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setNationalId(user.nationalId.replace(/\D/g, '').slice(0, 9));
         setDateOfBirth(user.dateOfBirth ? user.dateOfBirth.split('T')[0] : '1960-01-15');
         setGender(user.gender || 'Femenino');
-        setPrimaryPhone8(extract8Digits(user.primaryPhone));
+        setPrimaryPhone10(extract10Digits(user.primaryPhone));
         setAddress(user.address);
         setHealthInsurance(user.healthInsurance || '');
         setBloodType(user.bloodType || 'O+');
@@ -119,7 +119,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             id: c.id,
             contactName: c.contactName,
             relationship: c.relationship,
-            phone8: extract8Digits(c.phone),
+            phone10: extract10Digits(c.phone),
             preferredMethod: c.preferredMethod || 'Call',
           }))
         );
@@ -179,7 +179,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const addContactSlot = () => {
     setContacts([
       ...contacts,
-      { contactName: '', relationship: 'Familiar', phone8: '11998877', preferredMethod: 'Call' },
+      { contactName: '', relationship: 'Familiar', phone10: '1199887766', preferredMethod: 'Call' },
     ]);
   };
 
@@ -202,8 +202,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       return;
     }
 
-    if (primaryPhone8.length !== 8) {
-      setErrorMsg('El teléfono principal debe contener exactamente 8 dígitos numéricos.');
+    if (primaryPhone10.length !== 10) {
+      setErrorMsg('El teléfono principal debe contener exactamente 10 dígitos numéricos (ej. 1144332211).');
       return;
     }
 
@@ -217,8 +217,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setErrorMsg(`El contacto de emergencia #${i + 1} debe incluir nombre.`);
         return;
       }
-      if (contacts[i].phone8.length !== 8) {
-        setErrorMsg(`El contacto de emergencia #${i + 1} debe contener un teléfono de exactamente 8 dígitos.`);
+      if (contacts[i].phone10.length !== 10) {
+        setErrorMsg(`El contacto de emergencia #${i + 1} debe contener un teléfono de exactamente 10 dígitos (ej. 1199887766).`);
         return;
       }
     }
@@ -228,7 +228,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       nationalId: nationalId.trim(),
       dateOfBirth: new Date(dateOfBirth).toISOString(),
       gender,
-      primaryPhone: `+549${primaryPhone8.trim()}`,
+      primaryPhone: `+549${primaryPhone10.trim()}`,
       address: address.trim(),
       healthInsurance: healthInsurance.trim() || null,
       bloodType,
@@ -241,7 +241,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       emergencyContacts: contacts.map((c) => ({
         contactName: c.contactName.trim(),
         relationship: c.relationship.trim(),
-        phone: `+549${c.phone8.trim()}`,
+        phone: `+549${c.phone10.trim()}`,
         preferredMethod: c.preferredMethod,
       })),
     };
@@ -412,16 +412,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Teléfono Principal de Contacto * (8 dígitos)</label>
+            <label>Teléfono Principal de Contacto * (10 dígitos)</label>
             <div className="phone-input-wrapper">
               <span className="phone-prefix-badge">+549</span>
               <input
                 type="text"
                 inputMode="numeric"
-                maxLength={8}
-                value={primaryPhone8}
-                onChange={(e) => setPrimaryPhone8(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                placeholder="11443322"
+                maxLength={10}
+                value={primaryPhone10}
+                onChange={(e) => setPrimaryPhone10(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="1144332211"
                 required
               />
             </div>
@@ -624,16 +624,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
 
                 <div className="form-field">
-                  <label>Teléfono Directo * (8 dígitos)</label>
+                  <label>Teléfono Directo * (10 dígitos)</label>
                   <div className="phone-input-wrapper">
                     <span className="phone-prefix-badge">+549</span>
                     <input
                       type="text"
                       inputMode="numeric"
-                      maxLength={8}
-                      value={c.phone8}
-                      onChange={(e) => updateContact(idx, 'phone8', e.target.value.replace(/\D/g, '').slice(0, 8))}
-                      placeholder="11998877"
+                      maxLength={10}
+                      value={c.phone10}
+                      onChange={(e) => updateContact(idx, 'phone10', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="1199887766"
                       required
                     />
                   </div>

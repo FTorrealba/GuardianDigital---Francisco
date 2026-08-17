@@ -4,7 +4,7 @@ import './Onboarding.css';
 interface EmergencyContactForm {
   contactName: string;
   relationship: string;
-  phone8: string;
+  phone10: string;
   preferredMethod: string;
 }
 
@@ -49,7 +49,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
   const [nationalId, setNationalId] = useState<string>('');
   const [dateOfBirth, setDateOfBirth] = useState<string>('1960-01-15');
   const [gender, setGender] = useState<string>('Femenino');
-  const [primaryPhone8, setPrimaryPhone8] = useState<string>('11443322');
+  const [primaryPhone10, setPrimaryPhone10] = useState<string>('1144332211');
   const [address, setAddress] = useState<string>('');
   const [healthInsurance, setHealthInsurance] = useState<string>('');
   const [bloodType, setBloodType] = useState<string>('O+');
@@ -65,9 +65,9 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
 
   // Step 3: Emergency Contacts (Pre-seeded with 3 empty contact slots for ease of use)
   const [contacts, setContacts] = useState<EmergencyContactForm[]>([
-    { contactName: '', relationship: 'Hija / Hijo', phone8: '11998877', preferredMethod: 'Call' },
-    { contactName: '', relationship: 'Familiar / Conviviente', phone8: '11887766', preferredMethod: 'SMS' },
-    { contactName: '', relationship: 'Médico de Cabecera', phone8: '11776655', preferredMethod: 'Call' },
+    { contactName: '', relationship: 'Hija / Hijo', phone10: '1199887766', preferredMethod: 'Call' },
+    { contactName: '', relationship: 'Familiar / Conviviente', phone10: '1188776655', preferredMethod: 'SMS' },
+    { contactName: '', relationship: 'Médico de Cabecera', phone10: '1177665544', preferredMethod: 'Call' },
   ]);
 
   const addMedication = () => {
@@ -112,7 +112,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
   const addContactSlot = () => {
     setContacts([
       ...contacts,
-      { contactName: '', relationship: 'Familiar', phone8: '', preferredMethod: 'Call' },
+      { contactName: '', relationship: 'Familiar', phone10: '', preferredMethod: 'Call' },
     ]);
   };
 
@@ -135,8 +135,8 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
         setErrorMsg('El DNI no puede superar los 9 dígitos.');
         return;
       }
-      if (primaryPhone8.length !== 8) {
-        setErrorMsg('El teléfono principal debe contener exactamente 8 dígitos (ej. 11443322).');
+      if (primaryPhone10.length !== 10) {
+        setErrorMsg('El teléfono principal debe contener exactamente 10 dígitos (ej. 1144332211).');
         return;
       }
     }
@@ -157,8 +157,8 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
       return;
     }
 
-    if (primaryPhone8.length !== 8) {
-      setErrorMsg('El teléfono principal debe contener exactamente 8 dígitos.');
+    if (primaryPhone10.length !== 10) {
+      setErrorMsg('El teléfono principal debe contener exactamente 10 dígitos (ej. 1144332211).');
       return;
     }
 
@@ -172,8 +172,8 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
         setErrorMsg(`El contacto #${i + 1} debe incluir nombre.`);
         return;
       }
-      if (contacts[i].phone8.length !== 8) {
-        setErrorMsg(`El contacto #${i + 1} debe tener un número de teléfono de exactamente 8 dígitos.`);
+      if (contacts[i].phone10.length !== 10) {
+        setErrorMsg(`El contacto #${i + 1} debe tener un número de teléfono de exactamente 10 dígitos (ej. 1199887766).`);
         return;
       }
     }
@@ -183,7 +183,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
       nationalId: nationalId.trim(),
       dateOfBirth: new Date(dateOfBirth).toISOString(),
       gender,
-      primaryPhone: `+549${primaryPhone8.trim()}`,
+      primaryPhone: `+549${primaryPhone10.trim()}`,
       address: address.trim(),
       healthInsurance: healthInsurance.trim() || null,
       bloodType,
@@ -196,7 +196,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
       emergencyContacts: contacts.map((c) => ({
         contactName: c.contactName.trim(),
         relationship: c.relationship.trim(),
-        phone: `+549${c.phone8.trim()}`,
+        phone: `+549${c.phone10.trim()}`,
         preferredMethod: c.preferredMethod,
       })),
     };
@@ -244,11 +244,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
     setMedications([]);
     setAllergies([]);
     setConditions([]);
-    setPrimaryPhone8('11443322');
+    setPrimaryPhone10('1144332211');
     setContacts([
-      { contactName: '', relationship: 'Hija / Hijo', phone8: '11998877', preferredMethod: 'Call' },
-      { contactName: '', relationship: 'Familiar / Conviviente', phone8: '11887766', preferredMethod: 'SMS' },
-      { contactName: '', relationship: 'Médico de Cabecera', phone8: '11776655', preferredMethod: 'Call' },
+      { contactName: '', relationship: 'Hija / Hijo', phone10: '1199887766', preferredMethod: 'Call' },
+      { contactName: '', relationship: 'Familiar / Conviviente', phone10: '1188776655', preferredMethod: 'SMS' },
+      { contactName: '', relationship: 'Médico de Cabecera', phone10: '1177665544', preferredMethod: 'Call' },
     ]);
   };
 
@@ -423,18 +423,18 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
             </div>
 
             <div className="form-group">
-              <label htmlFor="primaryPhone">Teléfono Principal * (8 dígitos)</label>
+              <label htmlFor="primaryPhone">Teléfono Principal * (10 dígitos)</label>
               <div className="phone-input-wrapper">
                 <span className="phone-prefix-badge">+549</span>
                 <input
                   id="primaryPhone"
                   type="text"
                   inputMode="numeric"
-                  maxLength={8}
+                  maxLength={10}
                   className="form-control"
-                  placeholder="11443322"
-                  value={primaryPhone8}
-                  onChange={(e) => setPrimaryPhone8(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  placeholder="1144332211"
+                  value={primaryPhone10}
+                  onChange={(e) => setPrimaryPhone10(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   required
                 />
               </div>
@@ -639,17 +639,17 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
                   </div>
 
                   <div className="form-group">
-                    <label>Número de Teléfono * (8 dígitos)</label>
+                    <label>Número de Teléfono * (10 dígitos)</label>
                     <div className="phone-input-wrapper">
                       <span className="phone-prefix-badge">+549</span>
                       <input
                         type="text"
                         inputMode="numeric"
-                        maxLength={8}
+                        maxLength={10}
                         className="form-control"
-                        placeholder="11998877"
-                        value={contact.phone8}
-                        onChange={(e) => updateContact(idx, 'phone8', e.target.value.replace(/\D/g, '').slice(0, 8))}
+                        placeholder="1199887766"
+                        value={contact.phone10}
+                        onChange={(e) => updateContact(idx, 'phone10', e.target.value.replace(/\D/g, '').slice(0, 10))}
                         required
                       />
                     </div>

@@ -42,7 +42,7 @@ public static class UpdateUserProfile
 
         if (!CreateUser.IsValidPhone(request.PrimaryPhone))
         {
-            return Results.BadRequest(new { error = "El teléfono principal debe contener el prefijo +549 y exactamente 8 dígitos numéricos." });
+            return Results.BadRequest(new { error = "El teléfono principal debe contener el prefijo +549 y exactamente 10 dígitos numéricos." });
         }
 
         BloodType bloodType;
