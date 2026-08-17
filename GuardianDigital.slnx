@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GuardianDigital.Api/GuardianDigital.Api.csproj" />
+    <Project Path="src/GuardianDigital.Application/GuardianDigital.Application.csproj" />
+    <Project Path="src/GuardianDigital.Domain/GuardianDigital.Domain.csproj" />
+    <Project Path="src/GuardianDigital.Infrastructure/GuardianDigital.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GuardianDigital.Tests/GuardianDigital.Tests.csproj" />
+  </Folder>
+</Solution>
