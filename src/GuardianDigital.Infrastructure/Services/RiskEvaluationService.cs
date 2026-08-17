@@ -39,7 +39,7 @@ public class RiskEvaluationService : IRiskEvaluationService
 
         if (incident == null)
         {
-            throw new KeyNotFoundException($"Incident with ID '{incidentId}' was not found.");
+            throw new KeyNotFoundException($"No se encontró el incidente con ID '{incidentId}'.");
         }
 
         // Fetch recent sensor readings and recent incidents for context
@@ -58,8 +58,8 @@ public class RiskEvaluationService : IRiskEvaluationService
         _agentLogger.Log(
             agentName: "MedicalEvaluationAgent",
             cycleStage: "Observation",
-            message: $"Initiating preliminary medical evaluation for Incident #{incident.Id} (Origin: {incident.Origin}).",
-            details: $"Initial Risk: {incident.RiskLevel} | Description: '{incident.OriginalDescription}'",
+            message: $"Iniciando evaluación médica preliminar para el Incidente #{incident.Id} (Origen: {incident.Origin}).",
+            details: $"Riesgo Inicial: {incident.RiskLevel} | Descripción: '{incident.OriginalDescription}'",
             incidentId: incident.Id
         );
 
@@ -76,8 +76,8 @@ public class RiskEvaluationService : IRiskEvaluationService
         _agentLogger.Log(
             agentName: "MedicalEvaluationAgent",
             cycleStage: "Analysis",
-            message: $"Clinical risk evaluation: {result.AppliedRuleOrCriteria} -> Final Risk: {result.FinalRiskLevel}.",
-            details: $"Factors: [{string.Join(", ", result.PrioritizationFactors)}] | Summary: {result.DiagnosticSummary}",
+            message: $"Evaluación de riesgo clínico: {result.AppliedRuleOrCriteria} -> Riesgo Final: {result.FinalRiskLevel}.",
+            details: $"Factores: [{string.Join(", ", result.PrioritizationFactors)}] | Resumen: {result.DiagnosticSummary}",
             incidentId: incident.Id
         );
 
@@ -91,8 +91,8 @@ public class RiskEvaluationService : IRiskEvaluationService
         _agentLogger.Log(
             agentName: "MedicalEvaluationAgent",
             cycleStage: "Decision",
-            message: $"Incident status transitioned to 'UnderEvaluation' (Risk: {oldRisk} -> {result.FinalRiskLevel}).",
-            details: $"Rule: {result.AppliedRuleOrCriteria} | HardRule: {result.HardRuleTriggered}",
+            message: $"Estado del incidente actualizado a 'UnderEvaluation' (En Evaluación) (Riesgo: {oldRisk} -> {result.FinalRiskLevel}).",
+            details: $"Regla: {result.AppliedRuleOrCriteria} | ReglaCrítica: {result.HardRuleTriggered}",
             incidentId: incident.Id
         );
 
@@ -127,13 +127,13 @@ public class RiskEvaluationService : IRiskEvaluationService
         // =====================================================================
 
         // Hard Rule 1: Chest pain with radiation or crushing retrosternal pressure
-        if (MatchesAny(text, "chest pain with radiation", "radiat", "irradiación", "dolor en el pecho que se irradia", "arm, jaw", "brazo izquierdo", "mandíbula")
-            || (MatchesAny(text, "chest pain", "dolor en el pecho", "pecho") && MatchesAny(text, "radiation", "irradia", "left arm", "brazo", "jaw", "mandibula", "neck", "cuello")))
+        if (MatchesAny(text, "chest pain with radiation", "radiat", "irradiación", "dolor en el pecho que se irradia", "arm, jaw", "brazo izquierdo", "mandíbula", "irradia al brazo")
+            || (MatchesAny(text, "chest pain", "dolor en el pecho", "pecho") && MatchesAny(text, "radiation", "irradia", "left arm", "brazo", "jaw", "mandibula", "neck", "cuello", "falta el aire")))
         {
-            factors.Add("HardRule: Chest pain with classic radiation pattern (Acute Coronary Syndrome red flag)");
+            factors.Add("ReglaCrítica: Dolor precordial con patrón de irradiación clásico (Signo de alarma de Síndrome Coronario Agudo)");
             return new RiskEvaluationResult(
                 FinalRiskLevel: RiskLevel.PossibleEmergency,
-                DiagnosticSummary: "CRITICAL CARDIAC RED FLAG: Chest pain with somatic radiation detected. Deterministic emergency protocol triggered.",
+                DiagnosticSummary: "SIGNO DE ALARMA CARDÍACA CRÍTICA: Dolor de pecho con irradiación somática detectado. Activación obligatoria del protocolo de emergencia.",
                 AppliedRuleOrCriteria: "HardRule_ChestPainRadiation",
                 PrioritizationFactors: factors,
                 HardRuleTriggered: true,
@@ -142,12 +142,12 @@ public class RiskEvaluationService : IRiskEvaluationService
         }
 
         // Hard Rule 2: Loss of Consciousness / Syncope / Blackout
-        if (MatchesAny(text, "loss of consciousness", "syncope", "desmayo", "blackout", "passed out", "perdí el conocimiento", "unresponsive", "inconsciente"))
+        if (MatchesAny(text, "loss of consciousness", "syncope", "desmayo", "blackout", "passed out", "perdí el conocimiento", "unresponsive", "inconsciente", "desvanecimiento"))
         {
-            factors.Add("HardRule: Acute transient loss of consciousness (Syncope)");
+            factors.Add("ReglaCrítica: Pérdida transitoria de la conciencia aguda (Síncope)");
             return new RiskEvaluationResult(
                 FinalRiskLevel: RiskLevel.PossibleEmergency,
-                DiagnosticSummary: "CRITICAL NEUROLOGICAL FLAG: Documented loss of consciousness or syncope episode.",
+                DiagnosticSummary: "SIGNO DE ALARMA NEUROLÓGICA CRÍTICA: Episodio documentado de síncope o pérdida transitoria de conciencia.",
                 AppliedRuleOrCriteria: "HardRule_LossOfConsciousness",
                 PrioritizationFactors: factors,
                 HardRuleTriggered: true,
@@ -156,12 +156,12 @@ public class RiskEvaluationService : IRiskEvaluationService
         }
 
         // Hard Rule 3: Severe Airway Compromise / Asphyxia / Gasping / SpO2 < 85%
-        if (MatchesAny(text, "choking", "asfixia", "ahogo", "gasping for air", "cannot breathe at all", "no entra aire", "anaphylaxis", "throat swelling"))
+        if (MatchesAny(text, "choking", "asfixia", "ahogo", "gasping for air", "cannot breathe at all", "no entra aire", "anaphylaxis", "throat swelling", "cerrando la garganta"))
         {
-            factors.Add("HardRule: Acute severe airway/respiratory compromise");
+            factors.Add("ReglaCrítica: Compromiso respiratorio agudo severo / Asfixia");
             return new RiskEvaluationResult(
                 FinalRiskLevel: RiskLevel.PossibleEmergency,
-                DiagnosticSummary: "CRITICAL RESPIRATORY FLAG: Severe acute respiratory distress / acute airway compromise.",
+                DiagnosticSummary: "SIGNO DE ALARMA RESPIRATORIA CRÍTICA: Dificultad respiratoria severa y riesgo inminente de obstrucción de vía aérea.",
                 AppliedRuleOrCriteria: "HardRule_SevereAirwayCompromise",
                 PrioritizationFactors: factors,
                 HardRuleTriggered: true,
@@ -170,12 +170,12 @@ public class RiskEvaluationService : IRiskEvaluationService
         }
 
         // Hard Rule 4: Stroke FAST Signs (Facial droop + motor hemiparesis + dysarthria)
-        if (MatchesAny(text, "facial droop", "cara caída", "paralysis", "no puedo mover el brazo", "slurred speech", "balbuceo", "hemiparesis"))
+        if (MatchesAny(text, "facial droop", "cara caída", "cara caida", "paralysis", "no puedo mover el brazo", "slurred speech", "balbuceo", "hemiparesis", "brazo debil", "brazo débil"))
         {
-            factors.Add("HardRule: Acute focal neurological deficit (FAST Stroke Signs)");
+            factors.Add("ReglaCrítica: Déficit neurológico focal agudo (Signos FAST de ACV / Ictus)");
             return new RiskEvaluationResult(
                 FinalRiskLevel: RiskLevel.PossibleEmergency,
-                DiagnosticSummary: "CRITICAL NEUROLOGICAL FLAG: Acute signs of focal cerebral ischemia (Stroke warning).",
+                DiagnosticSummary: "SIGNO DE ALARMA NEUROLÓGICA CRÍTICA: Signos agudos de isquemia cerebral focal (Sospecha de Accidente Cerebrovascular).",
                 AppliedRuleOrCriteria: "HardRule_StrokeFAST",
                 PrioritizationFactors: factors,
                 HardRuleTriggered: true,
@@ -184,12 +184,12 @@ public class RiskEvaluationService : IRiskEvaluationService
         }
 
         // Hard Rule 5: Severe Traumatic Hemorrhage / Hematemesis
-        if (MatchesAny(text, "vomiting blood", "vomité sangre", "hematemesis", "arterial bleeding", "heavy bleeding", "sangrado abundante"))
+        if (MatchesAny(text, "vomiting blood", "vomité sangre", "hematemesis", "arterial bleeding", "heavy bleeding", "sangrado abundante", "mucha sangre"))
         {
-            factors.Add("HardRule: Active severe hemorrhage / upper GI bleeding");
+            factors.Add("ReglaCrítica: Hemorragia digestiva alta o sangrado activo severo");
             return new RiskEvaluationResult(
                 FinalRiskLevel: RiskLevel.PossibleEmergency,
-                DiagnosticSummary: "CRITICAL HEMORRHAGIC FLAG: Active heavy bleeding or hematemesis detected.",
+                DiagnosticSummary: "SIGNO DE ALARMA HEMORRÁGICA CRÍTICA: Sangrado activo profuso o hematemesis documentada.",
                 AppliedRuleOrCriteria: "HardRule_SevereHemorrhage",
                 PrioritizationFactors: factors,
                 HardRuleTriggered: true,
@@ -198,15 +198,15 @@ public class RiskEvaluationService : IRiskEvaluationService
         }
 
         // Hard Rule 6: High-G Impact Fall (>5G) + Immobility in Telemetry
-        if (incident.Origin == IncidentOrigin.Sensor && MatchesAny(text, "5.2g", "high-g", "fall impact", "caida"))
+        if (incident.Origin == IncidentOrigin.Sensor && MatchesAny(text, "5.2g", "high-g", "fall impact", "caida", "caída"))
         {
             var immobilityDetected = recentReadings?.Any(r => r.Value.Contains("IMMOBILE", StringComparison.OrdinalIgnoreCase) || r.Value.Contains("ZERO MOVEMENT", StringComparison.OrdinalIgnoreCase)) ?? false;
-            if (immobilityDetected || MatchesAny(text, "cannot walk", "no puedo caminar", "fracture"))
+            if (immobilityDetected || MatchesAny(text, "cannot walk", "no puedo caminar", "fracture", "no puedo levantarme", "no puedo pararme"))
             {
-                factors.Add("HardRule: High-G Fall impact combined with patient immobility");
+                factors.Add("ReglaCrítica: Impacto de alta aceleración por caída combinado con inmovilidad prolongada del paciente");
                 return new RiskEvaluationResult(
                     FinalRiskLevel: RiskLevel.PossibleEmergency,
-                    DiagnosticSummary: "CRITICAL TRAUMA FLAG: High acceleration impact vector followed by confirmed prolonged immobility.",
+                    DiagnosticSummary: "SIGNO DE ALARMA TRAUMATOLÓGICA CRÍTICA: Vector de desaceleración brusca seguido de inmovilidad confirmada por telemetría.",
                     AppliedRuleOrCriteria: "HardRule_HighGFallWithImmobility",
                     PrioritizationFactors: factors,
                     HardRuleTriggered: true,
@@ -223,99 +223,99 @@ public class RiskEvaluationService : IRiskEvaluationService
 
         // Baseline: Start with Incident's current/LLM assigned RiskLevel
         var calculatedRisk = incident.RiskLevel;
-        factors.Add($"Baseline LLM/Sensor Risk: {calculatedRisk}");
+        factors.Add($"Riesgo Base del LLM/Sensor: {calculatedRisk}");
 
         // 1. Life Risk Factor
-        bool hasCardiacSymptoms = MatchesAny(text, "palpitations", "taquicardia", "heart", "corazon", "racing", "tachycardia");
-        bool hasRespiratorySymptoms = MatchesAny(text, "dyspnea", "breathing", "respirar", "cough", "falta de aire", "shortness");
+        bool hasCardiacSymptoms = MatchesAny(text, "palpitations", "taquicardia", "heart", "corazon", "corazón", "racing", "tachycardia", "latidos");
+        bool hasRespiratorySymptoms = MatchesAny(text, "dyspnea", "breathing", "respirar", "cough", "falta de aire", "shortness", "tos");
         if (hasCardiacSymptoms || hasRespiratorySymptoms)
         {
-            factors.Add("Prioritization(1-LifeRisk): Vital organ involvement (cardiac/respiratory)");
+            factors.Add("Priorización (1-RiesgoVital): Compromiso de órgano vital (cardíaco / respiratorio)");
         }
 
         // 2. Consciousness State Factor
-        bool hasConsciousnessDeficit = MatchesAny(text, "dizzy", "mareo", "vertigo", "confusion", "confundido", "desorientado", "lightheaded", "atontado");
+        bool hasConsciousnessDeficit = MatchesAny(text, "dizzy", "mareo", "vertigo", "vértigo", "confusion", "confundido", "desorientado", "lightheaded", "atontado");
         if (hasConsciousnessDeficit)
         {
-            factors.Add("Prioritization(2-Consciousness): Impaired neurological / vestibular equilibrium");
+            factors.Add("Priorización (2-Conciencia): Alteración del equilibrio neurológico / vestibular");
             if (calculatedRisk == RiskLevel.Mild)
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Consciousness impairment elevated risk to Urgent");
+                factors.Add("Escalamiento -> Afectación del equilibrio escaló el riesgo a 'Urgente'");
             }
         }
 
         // 3. Mobility Factor
-        bool hasMobilityImpairment = MatchesAny(text, "cannot walk", "no puedo caminar", "no puedo pisar", "fell", "caida", "immobile", "sprain", "esguince");
+        bool hasMobilityImpairment = MatchesAny(text, "cannot walk", "no puedo caminar", "no puedo pisar", "fell", "caida", "caída", "immobile", "sprain", "esguince", "no me puedo levantar");
         if (hasMobilityImpairment)
         {
-            factors.Add("Prioritization(3-Mobility): Patient ambulation compromised");
+            factors.Add("Priorización (3-Movilidad): Deambulación del paciente comprometida");
             if (calculatedRisk == RiskLevel.Mild)
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Mobility loss elevated risk to Urgent");
+                factors.Add("Escalamiento -> Pérdida de movilidad escaló el riesgo a 'Urgente'");
             }
         }
 
         // 4. Age Vulnerability Factor
         if (age >= 80)
         {
-            factors.Add($"Prioritization(4-Age): Advanced geriatric vulnerability (Age: {age})");
+            factors.Add($"Priorización (4-Edad): Vulnerabilidad geriátrica avanzada (Edad: {age} años)");
             if (calculatedRisk == RiskLevel.Mild && (hasConsciousnessDeficit || hasMobilityImpairment || hasCardiacSymptoms))
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Age >= 80 with symptoms escalated to Urgent");
+                factors.Add("Escalamiento -> Paciente >= 80 años con síntomas comórbidos escaló a 'Urgente'");
             }
         }
         else if (age >= 70)
         {
-            factors.Add($"Prioritization(4-Age): Senior geriatric category (Age: {age})");
+            factors.Add($"Priorización (4-Edad): Adulto mayor en categoría de atención prioritaria (Edad: {age} años)");
         }
 
         // 5. Medical History & Current Medications Risk Modifiers
         bool hasDiabetes = medHistory.Contains("diabetes") || conditions.Any(c => c.Contains("diabetes")) || medications.Any(m => m.Contains("metformin") || m.Contains("insulin"));
         bool hasAnticoagulants = medications.Any(m => m.Contains("warfarin") || m.Contains("aspirin") || m.Contains("apixaban") || m.Contains("clopidogrel") || m.Contains("heparin") || m.Contains("anticoagulant"));
-        bool hasHypertensionOrCardiac = medHistory.Contains("hypertension") || medHistory.Contains("cardiac") || conditions.Any(c => c.Contains("hypertension") || c.Contains("pressure") || c.Contains("cardiac"));
-        bool hasAsthmaOrCopd = medHistory.Contains("asthma") || medHistory.Contains("copd") || conditions.Any(c => c.Contains("asthma") || c.Contains("respiratory"));
+        bool hasHypertensionOrCardiac = medHistory.Contains("hypertension") || medHistory.Contains("hipertensión") || medHistory.Contains("cardiac") || conditions.Any(c => c.Contains("hypertension") || c.Contains("hipertensión") || c.Contains("cardiac"));
+        bool hasAsthmaOrCopd = medHistory.Contains("asthma") || medHistory.Contains("asma") || medHistory.Contains("epoc") || medHistory.Contains("copd") || conditions.Any(c => c.Contains("asthma") || c.Contains("asma") || c.Contains("epoc") || c.Contains("respiratory"));
 
         // Clinical Interaction A: Anticoagulants + Fall / Trauma -> PossibleEmergency (Intracranial / Internal Hemorrhage risk)
-        if (hasAnticoagulants && (hasMobilityImpairment || MatchesAny(text, "fall", "caí", "golpe", "trauma", "head", "cabeza", "bruise")))
+        if (hasAnticoagulants && (hasMobilityImpairment || MatchesAny(text, "fall", "caí", "caida", "caída", "golpe", "trauma", "head", "cabeza", "bruise")))
         {
-            factors.Add("Prioritization(5-MedHistory): Patient on active Anticoagulant therapy with trauma/fall (Internal Hemorrhage Risk)");
+            factors.Add("Priorización (5-HistorialMédico): Paciente con terapia anticoagulante activa tras golpe/caída (Riesgo de Hemorragia Interna)");
             calculatedRisk = RiskLevel.PossibleEmergency;
-            factors.Add("Escalation -> Anticoagulant + Trauma elevated to PossibleEmergency");
+            factors.Add("Escalamiento -> Anticoagulante + Traumatismo escaló a 'Posible Emergencia'");
         }
 
         // Clinical Interaction B: Diabetes + Dizziness / Confusion -> Urgent (Hypoglycemic coma risk)
-        if (hasDiabetes && (hasConsciousnessDeficit || MatchesAny(text, "sweating", "shaking", "sudor", "temblor", "dizzy")))
+        if (hasDiabetes && (hasConsciousnessDeficit || MatchesAny(text, "sweating", "shaking", "sudor", "temblor", "dizzy", "mareo")))
         {
-            factors.Add("Prioritization(5-MedHistory): Diabetic patient presenting acute glycemic disturbance signs");
+            factors.Add("Priorización (5-HistorialMédico): Paciente diabético con signos de descompensación glucémica aguda");
             if (calculatedRisk < RiskLevel.Urgent)
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Diabetic acute symptom escalated to Urgent");
+                factors.Add("Escalamiento -> Síntoma agudo en paciente diabético escaló a 'Urgente'");
             }
         }
 
         // Clinical Interaction C: Cardiac / Hypertension history + Dyspnea / Palpitations
         if (hasHypertensionOrCardiac && (hasCardiacSymptoms || hasRespiratorySymptoms))
         {
-            factors.Add("Prioritization(5-MedHistory): Pre-existing Cardiovascular condition exacerbated by acute symptoms");
+            factors.Add("Priorización (5-HistorialMédico): Antecedente cardiovascular exacerbado por síntomas agudos");
             if (calculatedRisk < RiskLevel.Urgent)
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Cardiovascular history escalated to Urgent");
+                factors.Add("Escalamiento -> Historial cardiovascular escaló a 'Urgente'");
             }
         }
 
         // Clinical Interaction D: Asthma / COPD + Cold / Cough -> Urgent
-        if (hasAsthmaOrCopd && MatchesAny(text, "cold", "cough", "garganta", "congestión", "tos"))
+        if (hasAsthmaOrCopd && MatchesAny(text, "cold", "cough", "garganta", "congestión", "tos", "resfriado"))
         {
-            factors.Add("Prioritization(5-MedHistory): Chronic respiratory disease (Asthma/COPD) vulnerable to acute decompensation");
+            factors.Add("Priorización (5-HistorialMédico): Patología respiratoria crónica (Asma/EPOC) con riesgo de descompensación");
             if (calculatedRisk == RiskLevel.Mild)
             {
                 calculatedRisk = RiskLevel.Urgent;
-                factors.Add("Escalation -> Chronic respiratory vulnerability elevated to Urgent");
+                factors.Add("Escalamiento -> Vulnerabilidad respiratoria crónica escaló a 'Urgente'");
             }
         }
 
@@ -323,13 +323,13 @@ public class RiskEvaluationService : IRiskEvaluationService
         var contactsCount = user?.EmergencyContacts.Count ?? 0;
         if (contactsCount < 3)
         {
-            factors.Add($"Prioritization(6-Contacts): Support network alert ({contactsCount} contact(s) on file)");
+            factors.Add($"Priorización (6-Contactos): Alerta de red de contención ({contactsCount} contacto(s) en ficha)");
         }
 
         return new RiskEvaluationResult(
             FinalRiskLevel: calculatedRisk,
-            DiagnosticSummary: $"Evaluation complete. Final Risk: {calculatedRisk}. Triaged across 6 prioritization tiers with patient medical profile.",
-            AppliedRuleOrCriteria: $"PrioritizationCriteria_Tiers_1to6 (FinalRisk: {calculatedRisk})",
+            DiagnosticSummary: $"Evaluación clínica completada. Riesgo Final: {calculatedRisk}. Triaje jerárquico integrado con ficha médica del paciente.",
+            AppliedRuleOrCriteria: $"PrioritizationCriteria_Tiers_1to6 (RiesgoFinal: {calculatedRisk})",
             PrioritizationFactors: factors,
             HardRuleTriggered: false,
             EvaluatedAt: DateTime.UtcNow

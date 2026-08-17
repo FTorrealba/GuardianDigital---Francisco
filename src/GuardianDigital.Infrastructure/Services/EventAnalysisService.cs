@@ -67,7 +67,7 @@ public class EventAnalysisService : BackgroundService
 
                     if (isAnomaly)
                     {
-                        var deviceType = reading.Device?.Type.ToString() ?? "UnknownDevice";
+                        var deviceType = reading.Device?.Type.ToString() ?? "SensorGeneral";
 
                         // Observation log for anomaly trigger
                         agentLogger.Log(
@@ -132,9 +132,9 @@ public class EventAnalysisService : BackgroundService
         var val = reading.Value.ToUpperInvariant();
 
         // Rule 1: Fall Detection Flag
-        if (val.Contains("FALL") || val.Contains("FALL IMPACT") || val.Contains("CAIDA"))
+        if (val.Contains("FALL") || val.Contains("FALL IMPACT") || val.Contains("CAIDA") || val.Contains("CAÍDA"))
         {
-            return (true, "FallDetectionRule", RiskLevel.PossibleEmergency, "CRITICAL FALL DETECTED: Sudden high-g impact vector detected by motion sensor.");
+            return (true, "FallDetectionRule", RiskLevel.PossibleEmergency, "CAÍDA CRÍTICA DETECTADA: Vector de impacto de alta aceleración registrado por sensor de movimiento.");
         }
 
         // Rule 2: Tachycardia (HR > 140 BPM)
@@ -142,7 +142,7 @@ public class EventAnalysisService : BackgroundService
         {
             if (val.Contains("TACHYCARDIA") || val.Contains("TAQUICARDIA") || val.Contains("CRITICAL") || ExtractNumber(val) > 140)
             {
-                return (true, "CardiacTachycardiaRule", RiskLevel.Urgent, "CARDIAC ALERT: Acute tachycardia detected by biometric band.");
+                return (true, "CardiacTachycardiaRule", RiskLevel.Urgent, "ALERTA CARDÍACA: Taquicardia aguda detectada por pulsera biométrica.");
             }
         }
 
@@ -151,20 +151,20 @@ public class EventAnalysisService : BackgroundService
         {
             if (val.Contains("HYPOXIA") || val.Contains("HIPOXIA") || val.Contains("CRITICAL") || (ExtractNumber(val) > 0 && ExtractNumber(val) < 88))
             {
-                return (true, "SevereHypoxiaRule", RiskLevel.PossibleEmergency, "CRITICAL RESPIRATORY ALERT: Severe blood oxygen desaturation detected.");
+                return (true, "SevereHypoxiaRule", RiskLevel.PossibleEmergency, "ALERTA RESPIRATORIA CRÍTICA: Desaturación severa de oxígeno en sangre detectada.");
             }
         }
 
         // Rule 4: Immobility (Prolonged Zero Movement > 180 min)
         if (val.Contains("IMMOBILITY") || val.Contains("INMOVILIDAD") || val.Contains("ZERO MOVEMENT"))
         {
-            return (true, "ProlongedImmobilityRule", RiskLevel.Urgent, "IMMOBILITY ALERT: Extended duration of zero motion detected in living area.");
+            return (true, "ProlongedImmobilityRule", RiskLevel.Urgent, "ALERTA DE INMOVILIDAD: Período prolongado de inactividad total detectado en el área de descanso.");
         }
 
         // Rule 5: Door Forced / Unauthorized Entry
         if (val.Contains("UNAUTHORIZED") || val.Contains("FORZADA") || val.Contains("FORCED"))
         {
-            return (true, "PerimeterBreachRule", RiskLevel.Urgent, "PERIMETER SECURITY ALERT: Unexpected access or forced entry on perimeter door.");
+            return (true, "PerimeterBreachRule", RiskLevel.Urgent, "ALERTA DE SEGURIDAD PERIMETRAL: Acceso no autorizado o puerta perimetral forzada.");
         }
 
         return (false, string.Empty, RiskLevel.Mild, string.Empty);

@@ -7,7 +7,7 @@ namespace GuardianDigital.Infrastructure.Services;
 
 /// <summary>
 /// Natural Language Interpretation Service for voice and text symptom reporting.
-/// Implements clinical interpretation logic with real LLM provider connection hooks and 20+ scenario diagnostics.
+/// Implements clinical interpretation logic with real LLM provider connection hooks and 24 scenario diagnostics in Spanish.
 /// </summary>
 public class LanguageModelService : ILanguageModelService
 {
@@ -25,14 +25,14 @@ public class LanguageModelService : ILanguageModelService
     private readonly bool _useExternalLlm;
 
     public const string ClinicalTriageSystemPrompt = """
-        You are 'Guardián Digital AI Security Copilot' — an empathetic, clinical triage assistant for home monitoring.
-        Your goal is to interpret the user's free-text or spoken symptom descriptions.
-        Guidelines:
-        1. Interpret the symptoms clearly.
-        2. Generate 1-2 clinically relevant follow-up questions (strictly non-diagnostic).
-        3. Assign a suggested urgency level: 'mild', 'urgent', or 'possible_emergency'.
-        4. Provide an empathetic, calming conversational response.
-        Return your output strictly formatted as JSON:
+        Eres 'Copiloto de Seguridad Guardián Digital' — un asistente empático de triaje clínico para monitoreo domiciliario de pacientes y adultos mayores.
+        Tu objetivo es interpretar las descripciones de síntomas habladas o escritas por el usuario en lenguaje natural.
+        Directivas:
+        1. Interpretar con precisión los síntomas comunicados.
+        2. Formular 1 a 2 preguntas de seguimiento clínicamente relevantes (estrictamente no diagnósticas).
+        3. Asignar un nivel de urgencia sugerido: 'mild' (leve), 'urgent' (urgente) o 'possible_emergency' (posible emergencia).
+        4. Proveer una respuesta conversacional empática, calmada y en idioma español.
+        Retornar la salida estrictamente en formato JSON:
         {
           "detectedSymptoms": ["..."],
           "suggestedQuestions": ["...", "..."],
@@ -58,10 +58,10 @@ public class LanguageModelService : ILanguageModelService
         if (string.IsNullOrWhiteSpace(userMessage))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Unspecified description" },
-                SuggestedQuestions: new[] { "Could you please describe what discomfort or symptoms you are currently feeling?" },
+                DetectedSymptoms: new[] { "Descripción no especificada" },
+                SuggestedQuestions: new[] { "¿Podría describir con sus palabras qué malestar o síntoma está sintiendo en este momento?" },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I could not detect any specific symptoms. How can I assist you right now?"
+                ConversationalResponse: "No pude detectar síntomas específicos en su mensaje. ¿En qué puedo asistirlo en este momento?"
             );
         }
 
@@ -86,7 +86,7 @@ public class LanguageModelService : ILanguageModelService
         }
 
         // ---------------------------------------------------------------------
-        // 2. Local Clinical Scenario Diagnostic Engine (24 Scenarios)
+        // 2. Local Clinical Scenario Diagnostic Engine (24 Scenarios in Spanish)
         // ---------------------------------------------------------------------
         return EvaluateClinicalScenarios(userMessage);
     }
@@ -118,92 +118,92 @@ public class LanguageModelService : ILanguageModelService
 
         // Scenario 1: Chest Pain + Dyspnea / Shortness of breath
         if (Matches(text, "chest pain", "pecho", "dolor en el pecho", "dificultad para respirar", "trouble breathing", "can't breathe", "tightness in chest")
-            && Matches(text, "breath", "respirar", "pain", "dolor", "tight", "aprieta", "shortness"))
+            && Matches(text, "breath", "respirar", "pain", "dolor", "tight", "aprieta", "shortness", "falta el aire"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Acute chest discomfort / pressure", "Dyspnea / Shortness of breath" },
+                DetectedSymptoms: new[] { "Malestar / Opresión torácica aguda", "Disnea / Dificultad para respirar" },
                 SuggestedQuestions: new[]
                 {
-                    "Does the chest pain radiate to your left arm, jaw, neck, or back?",
-                    "Are you experiencing cold sweat, nausea, or dizziness along with the pain?"
+                    "¿El dolor de pecho se irradia hacia su brazo izquierdo, mandíbula, cuello o espalda?",
+                    "¿Presenta sudoración fría, náuseas o mareos junto con el dolor?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "I have registered your chest discomfort and difficulty breathing. Please sit down, rest comfortably, and avoid sudden exertion while we prepare emergency escalation."
+                ConversationalResponse: "He registrado su opresión en el pecho y dificultad para respirar. Por favor siéntese, repose cómodamente y evite cualquier esfuerzo físico mientras preparamos la asistencia de emergencia."
             );
         }
 
         // Scenario 2: Stroke Warning Signs (FAST - Facial droop, arm weakness, slurred speech)
-        if (Matches(text, "droop", "slur", "stroke", "paralysis", "weakness in arm", "arm is weak", "numb face", "numbness", "numb", "lado dormido", "cara caída", "no puedo mover el brazo", "dificultad para hablar", "balbuceo"))
+        if (Matches(text, "droop", "slur", "stroke", "paralysis", "weakness in arm", "arm is weak", "numb face", "numbness", "numb", "lado dormido", "cara caída", "no puedo mover el brazo", "dificultad para hablar", "balbuceo", "brazo débil", "cara caida"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Unilateral facial drooping / weakness", "Speech difficulty / Dysarthria", "Sudden motor weakness" },
+                DetectedSymptoms: new[] { "Asimetría facial unilateral / Pérdida de fuerza", "Dificultad en el habla / Disartria", "Paresia o debilidad motora súbita" },
                 SuggestedQuestions: new[]
                 {
-                    "Did these symptoms appear suddenly within the last few minutes?",
-                    "Can you smile evenly and raise both arms together?"
+                    "¿Estos síntomas comenzaron repentinamente en los últimos minutos?",
+                    "¿Puede sonreír de manera simétrica y levantar ambos brazos al mismo tiempo?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "These symptoms suggest potential acute neurological compromise. Please remain seated and keep your emergency contacts notified immediately."
+                ConversationalResponse: "Estos síntomas sugieren un potencial compromiso neurológico agudo. Permanezca sentado en reposo y mantenga notificados a sus contactos de emergencia de inmediato."
             );
         }
 
         // Scenario 3: Thunderclap / Sudden Worst Headache of Life
-        if (Matches(text, "worst headache", "thunderclap", "cabeza me estalla", "peor dolor de cabeza", "severe headache sudden", "dolor de cabeza insoportable"))
+        if (Matches(text, "worst headache", "thunderclap", "cabeza me estalla", "peor dolor de cabeza", "severe headache sudden", "dolor de cabeza insoportable", "trueno"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Sudden explosive / thunderclap headache", "Severe cephalalgia" },
+                DetectedSymptoms: new[] { "Cefalea en trueno / Explosiva repentina", "Cefalea severa hiperaguda" },
                 SuggestedQuestions: new[]
                 {
-                    "Did this headache reach peak intensity in less than a minute?",
-                    "Are you experiencing neck stiffness, fever, or visual changes?"
+                    "¿Este dolor de cabeza alcanzó su máxima intensidad en menos de un minuto?",
+                    "¿Presenta rigidez en la nuca, fiebre o alteraciones visuales?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "A sudden explosive headache requires prompt evaluation. Please lie down in a quiet, dimly lit space."
+                ConversationalResponse: "Un dolor de cabeza brusco e intenso requiere evaluación médica inmediata. Por favor recuéstese en un ambiente tranquilo y con luz tenue."
             );
         }
 
         // Scenario 4: Severe Respiratory Distress / Choking / Gasping
-        if (Matches(text, "choking", "ahogo", "asfixia", "gasping for air", "cannot breathe at all", "severe asthma attack", "no entra aire", "me ahogo"))
+        if (Matches(text, "choking", "ahogo", "asfixia", "gasping for air", "cannot breathe at all", "severe asthma attack", "no entra aire", "me ahogo", "cerrando la garganta"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Severe respiratory distress", "Airway compromise sensation", "Acute dyspnea" },
+                DetectedSymptoms: new[] { "Insuficiencia respiratoria severa", "Sensación de asfixia / Obstrucción de vía aérea", "Disnea aguda" },
                 SuggestedQuestions: new[]
                 {
-                    "Do you have a rescue inhaler or prescribed respiratory medication within reach?",
-                    "Are your lips, fingertips, or face appearing pale or blueish?"
+                    "¿Tiene a su alcance un inhalador de rescate o medicación respiratoria recetada?",
+                    "¿Nota sus labios, dedos o rostro pálidos o azulados?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "I am detecting severe breathing difficulty. Try to keep an upright posture to assist your airway while emergency response is coordinated."
+                ConversationalResponse: "Detecto una dificultad respiratoria severa. Intente mantener una postura erguida o semi-incorporada para facilitar el paso del aire mientras se coordina la respuesta de emergencia."
             );
         }
 
         // Scenario 5: Anaphylaxis / Severe Allergic Reaction / Throat Swelling
-        if (Matches(text, "allergic reaction", "alergia", "throat swelling", "hinchazón garganta", "tongue swollen", "lengua hinchada", "anaphylaxis", "urticaria severa"))
+        if (Matches(text, "allergic reaction", "alergia", "throat swelling", "hinchazón garganta", "tongue swollen", "lengua hinchada", "anaphylaxis", "urticaria severa", "edema de glotis"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Oropharyngeal edema / Throat tightness", "Suspected systemic allergic reaction" },
+                DetectedSymptoms: new[] { "Edema orofaríngeo / Opresión en garganta", "Sospecha de reacción alérgica sistémica / Anafilaxia" },
                 SuggestedQuestions: new[]
                 {
-                    "Have you been exposed to a known allergen or insect sting recently?",
-                    "Do you carry an epinephrine auto-injector (EpiPen) nearby?"
+                    "¿Estuvo expuesto recientemente a algún alimento, medicamento o picadura conocida?",
+                    "¿Tiene a mano un autoinyector de epinefrina o antialérgico de rescate?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "Severe allergic symptoms with airway involvement are high priority. Stay calm and prepare your emergency medications."
+                ConversationalResponse: "Los síntomas alérgicos severos con afectación de vías respiratorias son de alta prioridad. Mantenga la calma y tenga a mano sus medicamentos de emergencia."
             );
         }
 
         // Scenario 6: Syncope / Fainting / Sudden Loss of Consciousness
-        if (Matches(text, "fainted", "passed out", "desmayé", "desmayo", "blacked out", "perdí el conocimiento", "syncope"))
+        if (Matches(text, "fainted", "passed out", "desmayé", "desmayo", "blacked out", "perdí el conocimiento", "syncope", "desvanecí"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Transient loss of consciousness (Syncope)", "Sudden collapse" },
+                DetectedSymptoms: new[] { "Pérdida transitoria de la conciencia (Síncope)", "Colapso o desvanecimiento súbito" },
                 SuggestedQuestions: new[]
                 {
-                    "Did you experience palpitations, chest pain, or blurred vision immediately before fainting?",
-                    "Did you hit your head or injure any limbs during the fall?"
+                    "¿Sintió palpitaciones, dolor de pecho o visión borrosa justo antes del desmayo?",
+                    "¿Sufrió algún golpe en la cabeza o lesión en extremidades al caer?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "I have recorded your fainting episode. Please remain lying down with your legs elevated if possible to assist circulation."
+                ConversationalResponse: "He registrado su episodio de desvanecimiento. Permanezca recostado con las piernas ligeramente elevadas para favorecer la circulación sanguínea."
             );
         }
 
@@ -211,14 +211,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "vomiting blood", "sangre", "vomité sangre", "hematemesis", "black tarry stool", "vomitando sangre", "bleeding profusely"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Upper gastrointestinal hemorrhage (Hematemesis)", "Active bleeding" },
+                DetectedSymptoms: new[] { "Hemorragia digestiva alta (Hematemesis)", "Sangrado activo gastrointestinal" },
                 SuggestedQuestions: new[]
                 {
-                    "Are you experiencing dizziness, cold clammy skin, or lightheadedness?",
-                    "Do you have a history of gastric ulcers or take blood thinners?"
+                    "¿Siente mareos, piel fría y pegajosa o sensación de desmayo?",
+                    "¿Tiene antecedentes de úlceras o toma medicamentos anticoagulantes?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "Active bleeding signs require immediate clinical assessment. Please rest in a comfortable position and do not ingest foods or drinks."
+                ConversationalResponse: "Los signos de sangrado activo requieren evaluación clínica urgente. Descanse en una posición cómoda y no ingiera alimentos ni bebidas por el momento."
             );
         }
 
@@ -226,14 +226,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "heavy bleeding", "deep wound", "arterial", "herida profunda", "mucha sangre", "corte profundo", "sangrado abundante"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Major acute hemorrhage", "Traumatic laceration" },
+                DetectedSymptoms: new[] { "Hemorragia aguda importante", "Laceración o corte profundo traumático" },
                 SuggestedQuestions: new[]
                 {
-                    "Can you apply firm, continuous pressure directly over the wound with a clean cloth?",
-                    "Does the bleeding slow down when direct pressure is applied?"
+                    "¿Puede aplicar presión firme y continua directamente sobre la herida con un paño limpio?",
+                    "¿El sangrado disminuye al comprimir la zona?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "Please apply firm and continuous direct pressure to the wound with clean cloth or gauze. Keep the injured area elevated if safe to do so."
+                ConversationalResponse: "Por favor aplique presión directa, firme y constante sobre la herida con un paño limpio o gasa. Mantenga la extremidad elevada si no causa dolor."
             );
         }
 
@@ -241,29 +241,29 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "lost vision", "blind in one eye", "no puedo ver", "ceguera súbita", "pérdida de visión", "ojo no ve"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Acute visual acuity loss", "Sudden unilateral or bilateral blindness" },
+                DetectedSymptoms: new[] { "Pérdida aguda de agudeza visual", "Ceguera súbita unilateral o bilateral" },
                 SuggestedQuestions: new[]
                 {
-                    "Is there pain associated with the vision loss, or is it painless?",
-                    "Are you seeing flashes of light, severe halos, or dark shadows?"
+                    "¿La pérdida de visión viene acompañada de dolor ocular o de cabeza?",
+                    "¿Observa destellos de luz, sombras oscuras o visión en túnel?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "Sudden visual impairment is a critical condition. Please avoid rubbing your eyes and remain seated in a safe location."
+                ConversationalResponse: "La alteración visual súbita es un síntoma de atención urgente. Evite frotarse los ojos y permanezca sentado en un lugar seguro."
             );
         }
 
         // Scenario 10: Diabetic Crisis / Hypoglycemia / Severe Confusion
-        if (Matches(text, "sugar low", "hypoglycemia", "diabetic", "glucosa baja", "diabetes", "desorientado", "muy confundido", "shaking and sweating diabetes"))
+        if (Matches(text, "sugar low", "hypoglycemia", "diabetic", "glucosa baja", "diabetes", "desorientado", "muy confundido", "shaking and sweating diabetes", "azucar baja"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Acute glycemic imbalance / Hypoglycemia", "Neuroglycopenic confusion / Diaphoresis" },
+                DetectedSymptoms: new[] { "Desbalance glucémico agudo / Hipoglucemia", "Desorientación neuroglucopénica / Sudoración profusa" },
                 SuggestedQuestions: new[]
                 {
-                    "If you have a glucometer available, what is your current blood sugar reading?",
-                    "Are you able to swallow a fast-acting carbohydrate (such as fruit juice or glucose tablets) safely?"
+                    "Si dispone de un glucómetro, ¿cuál es su valor actual de glucosa en sangre?",
+                    "¿Puede tragar de forma segura un líquido azucarado o jugo de frutas?"
                 },
                 SuggestedUrgencyLevel: "possible_emergency",
-                ConversationalResponse: "I have registered your diabetic symptoms. If you are conscious and able to swallow, consume 15g of fast-acting glucose and stay seated."
+                ConversationalResponse: "He registrado sus síntomas glucémicos. Si está consciente y puede tragar sin dificultad, ingiera 15g de hidratos de carbono rápidos (ej. medio vaso de jugo o agua azucarada) y manténgase sentado."
             );
         }
 
@@ -272,62 +272,62 @@ public class LanguageModelService : ILanguageModelService
         // ---------------------------------------------------------------------
 
         // Scenario 11: High Fever with Shivering / Chills
-        if (Matches(text, "high fever", "fiebre alta", "39", "40", "chills", "escalofríos", "temblores de fiebre"))
+        if (Matches(text, "high fever", "fiebre alta", "39", "40", "chills", "escalofríos", "temblores de fiebre", "escalofrios"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "High-grade hyperthermia / Pyrexia", "Rigors / Febrile chills" },
+                DetectedSymptoms: new[] { "Hipertermia / Fiebre de alto grado", "Chuchos de frío / Escalofríos febriles" },
                 SuggestedQuestions: new[]
                 {
-                    "What is your exact temperature measured on a thermometer?",
-                    "Are you experiencing a stiff neck, confusion, or a new skin rash?"
+                    "¿Cuál es su temperatura exacta medida con termómetro?",
+                    "¿Tiene rigidez en la nuca, confusión mental o manchas rojizas en la piel?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have noted your high fever. Keep well-hydrated, dress in light clothing, and monitor your temperature frequently."
+                ConversationalResponse: "He tomado nota de su cuadro febril elevado. Manténgase bien hidratado con agua o caldos, use ropa ligera y controle su temperatura periódicamente."
             );
         }
 
         // Scenario 12: Severe Vertigo / Acute Dizziness
-        if (Matches(text, "dizzy", "dizziness", "vertigo", "spinning", "mareo", "mareado", "todo me da vueltas", "inestabilidad"))
+        if (Matches(text, "dizzy", "dizziness", "vertigo", "spinning", "mareo", "mareado", "todo me da vueltas", "inestabilidad", "vértigo", "mucho mareo"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Severe vertigo / Vestibular imbalance", "Postural instability" },
+                DetectedSymptoms: new[] { "Vértigo severo / Desbalance vestibular", "Inestabilidad postural aguda" },
                 SuggestedQuestions: new[]
                 {
-                    "Does the room spinning sensation worsen when you turn your head or change position?",
-                    "Are you having any ringing in your ears (tinnitus) or nausea?"
+                    "¿La sensación de giro empeora al mover la cabeza o cambiar de postura?",
+                    "¿Presenta zumbidos en los oídos (acúfenos) o náuseas intensas?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have registered your vertigo. Please remain seated or lie down to prevent falls, and avoid rapid head movements."
+                ConversationalResponse: "He registrado su episodio de vértigo. Por favor permanezca sentado o acostado para evitar caídas y evite realizar movimientos bruscos de la cabeza."
             );
         }
 
         // Scenario 13: Palpitations / Racing Irregular Heartbeat
-        if (Matches(text, "palpitations", "racing heart", "heart beating fast", "corazón acelerado", "palpitaciones", "taquicardia", "latidos irregulares"))
+        if (Matches(text, "palpitations", "racing heart", "heart beating fast", "corazón acelerado", "palpitaciones", "taquicardia", "latidos irregulares", "late a mil"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Cardiac palpitations", "Tachyarrhythmia sensation" },
+                DetectedSymptoms: new[] { "Palpitaciones cardíacas perceptibles", "Sensación de taquiarritmia" },
                 SuggestedQuestions: new[]
                 {
-                    "Does your heartbeat feel unusually rapid, skipped, or fluttering?",
-                    "Did this start suddenly at rest or following physical activity/caffeine?"
+                    "¿Siente el pulso acelerado, con saltos o latidos desordenados?",
+                    "¿Comenzó de forma repentina en reposo o tras consumir café/estimulantes?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have noted your elevated heart rate. Please sit down comfortably, breathe slowly and deeply, and avoid caffeine or stimulants."
+                ConversationalResponse: "He registrado su aceleración en el ritmo cardíaco. Por favor siéntese cómodo, respire lento y profundo, y evite el consumo de café o estimulantes."
             );
         }
 
         // Scenario 14: Severe Fall / Hip or Limb Injury with Inability to Walk
-        if (Matches(text, "fell", "caí", "caida", "hip pain", "cannot walk", "sprain", "esguince", "no puedo pisar", "golpe fuerte cadera", "fracture"))
+        if (Matches(text, "fell", "caí", "caida", "caída", "hip pain", "cannot walk", "sprain", "esguince", "no puedo pisar", "golpe fuerte cadera", "fracture", "resbalé", "no puedo pararme"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Acute post-fall orthopedic trauma", "Inability to bear weight" },
+                DetectedSymptoms: new[] { "Traumatismo ortopédico agudo por caída", "Imposibilidad para la bipedestación o apoyo" },
                 SuggestedQuestions: new[]
                 {
-                    "Are you able to move your toes and feel sensation in the injured leg?",
-                    "Is there visible swelling, bruising, or deformity around the joint?"
+                    "¿Puede mover los dedos y siente sensibilidad en la pierna o brazo afectado?",
+                    "¿Observa hinchazón evidente, hematoma o deformidad en la zona golpeada?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have logged your fall injury. Do not attempt to force weight on the injured limb; rest with the area supported and immobilized."
+                ConversationalResponse: "He registrado su lesión por caída. No intente forzar el apoyo sobre la extremidad afectada; permanezca en reposo con la zona inmovilizada."
             );
         }
 
@@ -335,14 +335,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "burned", "quemadura", "scald", "agua hirviendo", "quemé", "blisters", "ampollas"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Thermal burn injury", "Blistering / Integumentary damage" },
+                DetectedSymptoms: new[] { "Quemadura térmica", "Formación de flictenas / Ampollas dérmicas" },
                 SuggestedQuestions: new[]
                 {
-                    "Is the burn larger than the palm of your hand, or located on the face, hands, or joints?",
-                    "Have you cooled the area with gently running cool water (not ice)?"
+                    "¿La quemadura es mayor que la palma de su mano o afecta cara, manos o articulaciones?",
+                    "¿Ha enfriado la zona bajo un chorro suave de agua corriente fresca?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "Please cool the burn area under gentle cool tap water for 10-20 minutes. Do not apply ice, butter, or puncture any blisters."
+                ConversationalResponse: "Enfríe la zona afectada bajo un chorro suave de agua fresca durante 10 a 15 minutos. No aplique hielo, cremas caseras ni reviente las ampollas."
             );
         }
 
@@ -350,14 +350,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "urination pain", "burning when I pee", "renal", "riñón", "dolor al orinar", "cistitis", "flank pain", "dolor lumbar fuerte"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Dysuria / Urinary tract discomfort", "Flank / Renal area discomfort" },
+                DetectedSymptoms: new[] { "Disuria / Molestia miccional aguda", "Dolor en fosa renal / Lumbar cólico" },
                 SuggestedQuestions: new[]
                 {
-                    "Are you noticing blood in the urine or having accompanying fever/chills?",
-                    "Does the pain come in sharp waves radiating toward the groin?"
+                    "¿Ha observado sangre en la orina o tiene fiebre con escalofríos?",
+                    "¿El dolor se presenta en oleadas intensas que bajan hacia la ingle?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have registered your urinary symptoms. Drink plenty of water and arrange a prompt clinical consultation."
+                ConversationalResponse: "He registrado sus molestias urinarias. Beba abundante agua y coordine una consulta médica para evaluación de la muestra."
             );
         }
 
@@ -365,14 +365,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "persistent vomiting", "vomitando todo", "no retengo líquidos", "cannot keep water down", "dehydrated", "deshidratación"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Intractable emesis", "Dehydration risk" },
+                DetectedSymptoms: new[] { "Vómitos incoercibles", "Riesgo de deshidratación aguda" },
                 SuggestedQuestions: new[]
                 {
-                    "For how many hours has the vomiting been occurring without keeping fluids down?",
-                    "Are you experiencing extreme thirst, dry mouth, or dark concentrated urine?"
+                    "¿Durante cuántas horas ha estado vomitando sin poder tolerar líquidos?",
+                    "¿Siente la boca muy seca, sed intensa u orina escasa y oscura?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have recorded your vomiting symptoms. Take tiny, frequent sips of electrolyte solution or water every few minutes."
+                ConversationalResponse: "He registrado su cuadro de vómitos. Tome sorbos muy pequeños de agua o suero de rehidratación oral cada 5 a 10 minutos."
             );
         }
 
@@ -380,14 +380,14 @@ public class LanguageModelService : ILanguageModelService
         if (Matches(text, "back locked", "severe back spasm", "espalda trabada", "dolor lumbar agudo", "lumbago", "ciática", "no me puedo doblar"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Acute lumbosacral spasm", "Severe functional mobility limitation" },
+                DetectedSymptoms: new[] { "Espasmo lumbosacro agudo / Lumbalgia", "Limitación funcional severa de la movilidad" },
                 SuggestedQuestions: new[]
                 {
-                    "Does the pain shoot down into your leg, foot, or cause numbness in the groin?",
-                    "Are you having any difficulty controlling your bladder or bowel function?"
+                    "¿El dolor se irradia hacia la pierna o siente adormecimiento en pies o genitales?",
+                    "¿Presenta alguna dificultad para controlar la micción o evacuación?"
                 },
                 SuggestedUrgencyLevel: "urgent",
-                ConversationalResponse: "I have logged your acute back spasm. Rest on a firm surface with pillows supporting your knees, and avoid twisting."
+                ConversationalResponse: "He registrado su contractura lumbar aguda. Descanse sobre una superficie firme con almohadas bajo las rodillas y evite movimientos de torsión."
             );
         }
 
@@ -396,92 +396,92 @@ public class LanguageModelService : ILanguageModelService
         // ---------------------------------------------------------------------
 
         // Scenario 19: Mild Tension Headache / Eye Strain
-        if (Matches(text, "mild headache", "tension headache", "dolor de cabeza leve", "cansancio visual", "headache from screen", "dolor cabeza leve"))
+        if (Matches(text, "mild headache", "tension headache", "dolor de cabeza leve", "cansancio visual", "headache from screen", "dolor cabeza leve", "frente a la pantalla"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Mild tension-type headache", "Digital eye fatigue" },
+                DetectedSymptoms: new[] { "Cefalea tensional leve", "Fatiga visual digital" },
                 SuggestedQuestions: new[]
                 {
-                    "Have you been looking at computer/phone screens for extended periods today?",
-                    "Have you had enough water and rest in the last several hours?"
+                    "¿Ha estado frente a pantallas de computadora o teléfono durante muchas horas hoy?",
+                    "¿Ha tomado suficiente agua y descansado en las últimas horas?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I have noted your mild headache. Taking a short break in a quiet space and drinking a glass of water may provide relief."
+                ConversationalResponse: "He registrado su dolor de cabeza leve. Tomar un breve descanso en un lugar tranquilo y beber un vaso de agua fresca le ayudará a aliviar la molestia."
             );
         }
 
         // Scenario 20: Mild Cold / Scratchy Sore Throat / Sneezing
-        if (Matches(text, "sore throat", "garganta", "mild cold", "resfriado", "gripe leve", "estornudos", "congestión leve", "scratchy throat"))
+        if (Matches(text, "sore throat", "garganta", "mild cold", "resfriado", "gripe leve", "estornudos", "congestión leve", "scratchy throat", "dolor de garganta", "congestión nasal", "resfrio"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Mild upper respiratory irritation / Pharyngitis", "Mild rhinitis / Nasal congestion" },
+                DetectedSymptoms: new[] { "Faringitis / Irritación leve de garganta", "Rinitis / Congestión nasal leve" },
                 SuggestedQuestions: new[]
                 {
-                    "Do you have a mild cough, runny nose, or slight fever?",
-                    "How many days have you been experiencing these cold symptoms?"
+                    "¿Tiene tos leve, secreción nasal o febrícula?",
+                    "¿Desde hace cuántos días siente estos síntomas de resfrío?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I have registered your cold symptoms. Warm fluids, honey, and adequate rest are recommended while monitoring for changes."
+                ConversationalResponse: "He registrado sus síntomas de resfriado. Se recomienda ingerir líquidos tibios, descansar y observar la evolución de las molestias."
             );
         }
 
         // Scenario 21: Mild Muscle Soreness / Post-Workout Fatigue
-        if (Matches(text, "muscle soreness", "dolor muscular", "sore muscles", "agujetas", "cansancio por ejercicio", "dolor de piernas leve"))
+        if (Matches(text, "muscle soreness", "dolor muscular", "sore muscles", "agujetas", "cansancio por ejercicio", "dolor de piernas leve", "después de caminar", "despues de caminar"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Delayed onset muscle soreness (DOMS)", "Physical exertion fatigue" },
+                DetectedSymptoms: new[] { "Mialgias por esfuerzo / Dolor muscular tardío", "Fatiga física leve" },
                 SuggestedQuestions: new[]
                 {
-                    "Did you engage in strenuous physical activity or unfamiliar exercises recently?",
-                    "Does gentle stretching or applying a warm compress help relieve the soreness?"
+                    "¿Realizó actividad física o esfuerzos no habituales recientemente?",
+                    "¿El reposo o la aplicación de compresas tibias le produce alivio?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "Muscle soreness following exertion is common. Light stretching, hydration, and restful sleep usually help recovery."
+                ConversationalResponse: "El cansancio muscular tras un esfuerzo físico es habitual. Estiramientos suaves, buena hidratación y un buen descanso facilitarán su recuperación."
             );
         }
 
         // Scenario 22: Mild Insomnia / Tiredness / Poor Sleep
-        if (Matches(text, "tired", "fatigue", "insomnia", "no pude dormir", "cansado", "mal descanso", "sueño ligero"))
+        if (Matches(text, "tired", "fatigue", "insomnia", "no pude dormir", "cansado", "mal descanso", "sueño ligero", "cansancio"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "General fatigue", "Transient sleep disturbance" },
+                DetectedSymptoms: new[] { "Fatiga general leve", "Alteración transitoria del sueño" },
                 SuggestedQuestions: new[]
                 {
-                    "How many hours of restful sleep were you able to get last night?",
-                    "Are you experiencing any other physical discomfort alongside the tiredness?"
+                    "¿Cuántas horas de sueño continuo pudo conciliar anoche?",
+                    "¿Siente alguna otra molestia física acompañando al cansancio?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I have logged your fatigue. Ensure you stay well hydrated today and consider resting in a quiet environment when possible."
+                ConversationalResponse: "He registrado su sensación de cansancio. Procure mantenerse bien hidratado hoy y tome un momento de reposo en un ambiente relajado."
             );
         }
 
         // Scenario 23: Mild Skin Rash / Itchiness / Insect Bite
-        if (Matches(text, "itchy", "rash", "picazón", "picadura", "granito", "alergia leve en piel", "insect bite"))
+        if (Matches(text, "itchy", "rash", "picazón", "picadura", "granito", "alergia leve en piel", "insect bite", "picazon"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Localized pruritus / Mild skin erythema", "Superficial insect bite reaction" },
+                DetectedSymptoms: new[] { "Prurito localizado / Eritema cutáneo leve", "Reacción leve a picadura superficial" },
                 SuggestedQuestions: new[]
                 {
-                    "Is the rash confined to a small spot, or spreading across other areas of your body?",
-                    "Are you experiencing any facial swelling or difficulty breathing?"
+                    "¿La picazón está en una zona pequeña o se extiende por el cuerpo?",
+                    "¿Presenta hinchazón en el rostro o alguna dificultad respiratoria?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I have recorded your localized skin itch. Avoid scratching the area and apply a cool, damp compress if needed."
+                ConversationalResponse: "He registrado la molestia en su piel. Evite rascarse para no irritar la zona y aplique una compresa fresca y limpia si lo desea."
             );
         }
 
         // Scenario 24: Minor Superficial Scrape / Small Paper Cut
-        if (Matches(text, "small cut", "scrape", "rasguño", "corte pequeño", "corte de papel", "raspón leve"))
+        if (Matches(text, "small cut", "scrape", "rasguño", "corte pequeño", "corte de papel", "raspón leve", "rasguno", "corte pequeno", "raspon"))
         {
             return new SymptomInterpretationResult(
-                DetectedSymptoms: new[] { "Minor superficial abrasion / Cut" },
+                DetectedSymptoms: new[] { "Erosión superficial menor / Rasguño leve" },
                 SuggestedQuestions: new[]
                 {
-                    "Has the small cut stopped bleeding after gentle pressure?",
-                    "Have you washed the area with clean water and mild soap?"
+                    "¿El pequeño corte ya dejó de sangrar tras limpiarlo?",
+                    "¿Ha lavado la zona con agua limpia y jabón neutro?"
                 },
                 SuggestedUrgencyLevel: "mild",
-                ConversationalResponse: "I have noted your minor scrape. Washing the area gently with water and mild soap and applying a clean bandage is recommended."
+                ConversationalResponse: "He tomado nota de su pequeño rasguño. Se recomienda lavar suavemente con agua y jabón y colocar un apósito limpio si es necesario."
             );
         }
 
@@ -489,14 +489,14 @@ public class LanguageModelService : ILanguageModelService
         // General Fallback Scenario for unstructured input
         // ---------------------------------------------------------------------
         return new SymptomInterpretationResult(
-            DetectedSymptoms: new[] { $"Reported symptom: {input.Trim()}" },
+            DetectedSymptoms: new[] { $"Síntoma reportado: {input.Trim()}" },
             SuggestedQuestions: new[]
             {
-                "On a scale of 1 to 10, how intense would you rate your current discomfort?",
-                "How long ago did these symptoms begin?"
+                "En una escala del 1 al 10, ¿qué nivel de molestia o incomodidad siente en este momento?",
+                "¿Hace cuánto tiempo comenzaron estas sensaciones?"
             },
             SuggestedUrgencyLevel: "mild",
-            ConversationalResponse: $"I have recorded your report: '{input.Trim()}'. Our monitoring system is observing your vitals and standing by to assist."
+            ConversationalResponse: $"He registrado su reporte: '{input.Trim()}'. Nuestro sistema de teleasistencia está observando sus signos vitales y preparado para asistirlo."
         );
     }
 

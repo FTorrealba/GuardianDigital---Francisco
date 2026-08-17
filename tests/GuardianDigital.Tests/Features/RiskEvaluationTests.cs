@@ -40,7 +40,7 @@ public class RiskEvaluationTests
         {
             Id = Guid.NewGuid(),
             Origin = IncidentOrigin.Voice,
-            OriginalDescription = "Reported: 'I have chest pain radiating to my left arm and neck' | Symptoms: Chest pain",
+            OriginalDescription = "Reporte: 'Siento dolor de pecho que se irradia a mi brazo izquierdo y cuello' | Síntomas detectados: Dolor de pecho",
             RiskLevel = RiskLevel.Mild, // Baseline is mild
             Status = IncidentStatus.Detected
         };
@@ -127,8 +127,8 @@ public class RiskEvaluationTests
         Assert.NotNull(result);
         Assert.Equal(RiskLevel.Urgent, result.FinalRiskLevel);
         Assert.False(result.HardRuleTriggered);
-        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Diabetic", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Age", StringComparison.OrdinalIgnoreCase) || f.Contains("Consciousness", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Diabetic", StringComparison.OrdinalIgnoreCase) || f.Contains("diabéti", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Age", StringComparison.OrdinalIgnoreCase) || f.Contains("Consciousness", StringComparison.OrdinalIgnoreCase) || f.Contains("Edad", StringComparison.OrdinalIgnoreCase) || f.Contains("Conciencia", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class RiskEvaluationTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(RiskLevel.PossibleEmergency, result.FinalRiskLevel);
-        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Anticoagulant", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.PrioritizationFactors, f => f.Contains("Anticoagulant", StringComparison.OrdinalIgnoreCase) || f.Contains("Anticoagulante", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -149,7 +149,7 @@ public class EmergencyManagementTests
         Assert.Contains(result.ActionsDispatched, a => a.ActionType == "ContactEmergencyServices");
 
         var emergencyAction = result.ActionsDispatched.First(a => a.ActionType == "ContactEmergencyServices");
-        Assert.Contains("30-second cancellation window", emergencyAction.Result);
+        Assert.True(emergencyAction.Result.Contains("30 segundos", StringComparison.OrdinalIgnoreCase) || emergencyAction.Result.Contains("30-second", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -10,7 +10,7 @@ public static class ReportSymptom
 {
     public record ReportSymptomRequest(
         string Message,
-        string? Origin = "Voice", // "Voice" | "Text"
+        string? Origin = null,
         Guid? UserId = null
     );
 
@@ -19,7 +19,7 @@ public static class ReportSymptom
         string Origin,
         IReadOnlyList<string> DetectedSymptoms,
         IReadOnlyList<string> SuggestedQuestions,
-        string SuggestedUrgencyLevel, // "mild" | "urgent" | "possible_emergency"
+        string SuggestedUrgencyLevel,
         string ConversationalResponse,
         DateTime Timestamp
     );
@@ -33,10 +33,9 @@ public static class ReportSymptom
     {
         if (string.IsNullOrWhiteSpace(request.Message))
         {
-            return Results.BadRequest(new { error = "Symptom message cannot be empty." });
+            return Results.BadRequest(new { error = "El mensaje o reporte de síntomas no puede estar vacío." });
         }
 
-        // Parse Origin
         var origin = IncidentOrigin.Voice;
         if (!string.IsNullOrWhiteSpace(request.Origin) &&
             Enum.TryParse<IncidentOrigin>(request.Origin, true, out var parsedOrigin))
@@ -48,8 +47,8 @@ public static class ReportSymptom
         agentLogger.Log(
             agentName: "InteractionAgent",
             cycleStage: "Observation",
-            message: $"Received user symptom report via {origin}.",
-            details: $"Message: \"{request.Message}\""
+            message: $"Reporte de síntomas recibido vía {origin}.",
+            details: $"Mensaje: \"{request.Message}\""
         );
 
         // Step 2: LLM Interpretation & Clinical Follow-up Generation
@@ -58,8 +57,8 @@ public static class ReportSymptom
         agentLogger.Log(
             agentName: "InteractionAgent",
             cycleStage: "Analysis",
-            message: $"LLM interpretation completed. Urgency: '{llmResult.SuggestedUrgencyLevel}'.",
-            details: $"Detected Symptoms: [{string.Join(", ", llmResult.DetectedSymptoms)}] | Suggested Questions: [{string.Join(" | ", llmResult.SuggestedQuestions)}]"
+            message: $"Interpretación del modelo completada. Urgencia clínica: '{llmResult.SuggestedUrgencyLevel}'.",
+            details: $"Síntomas detectados: [{string.Join(", ", llmResult.DetectedSymptoms)}] | Preguntas sugeridas: [{string.Join(" | ", llmResult.SuggestedQuestions)}]"
         );
 
         // Map Urgency Level to Domain RiskLevel
@@ -92,7 +91,7 @@ public static class ReportSymptom
             UserId = targetUserId,
             Timestamp = DateTime.UtcNow,
             Origin = origin,
-            OriginalDescription = $"Reported: \"{request.Message}\" | Symptoms: {string.Join(", ", llmResult.DetectedSymptoms)}",
+            OriginalDescription = $"Reporte: \"{request.Message}\" | Síntomas detectados: {string.Join(", ", llmResult.DetectedSymptoms)}",
             RiskLevel = riskLevel,
             Status = IncidentStatus.Detected
         };
@@ -103,7 +102,7 @@ public static class ReportSymptom
             incident.UserResponses.Add(new UserResponse
             {
                 Question = q,
-                Answer = "(Awaiting response)",
+                Answer = "(Esperando respuesta del paciente)",
                 Timestamp = DateTime.UtcNow
             });
         }
@@ -114,8 +113,8 @@ public static class ReportSymptom
         agentLogger.Log(
             agentName: "InteractionAgent",
             cycleStage: "Decision",
-            message: $"Incident registered with status 'Detected' and risk '{riskLevel}'.",
-            details: $"Incident ID: {incident.Id} | Origin: {origin}",
+            message: $"Incidente registrado con estado 'Detectado' y riesgo '{riskLevel}'.",
+            details: $"ID de Incidente: {incident.Id} | Origen: {origin}",
             incidentId: incident.Id
         );
 

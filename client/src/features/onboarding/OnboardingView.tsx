@@ -282,7 +282,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
               <h4>Ficha Médica & Rescate</h4>
               <p><strong>Grupo Sanguíneo:</strong> <span className="blood-badge">{registeredUser.bloodType}</span></p>
               <p><strong>Historial / Antecedentes:</strong> {registeredUser.medicalProfile?.medicalHistory || 'Ninguno registrado'}</p>
-              
+
               <div style={{ marginTop: '0.5rem' }}>
                 <strong>Alergias Conocidas:</strong>
                 <div className="tag-list" style={{ marginTop: '0.25rem' }}>
@@ -383,7 +383,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
             </div>
 
             <div className="form-group">
-              <label htmlFor="nationalId">Documento de Identidad (DNI) * (Máx. 9 dígitos)</label>
+              <label htmlFor="nationalId">Documento de Identidad (DNI) *</label>
               <input
                 id="nationalId"
                 type="text"
@@ -423,7 +423,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
             </div>
 
             <div className="form-group">
-              <label htmlFor="primaryPhone">Teléfono Principal * (10 dígitos)</label>
+              <label htmlFor="primaryPhone">Teléfono Principal *</label>
               <div className="phone-input-wrapper">
                 <span className="phone-prefix-badge">+549</span>
                 <input
@@ -639,7 +639,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
                   </div>
 
                   <div className="form-group">
-                    <label>Número de Teléfono * (10 dígitos)</label>
+                    <label>Número de Teléfono *</label>
                     <div className="phone-input-wrapper">
                       <span className="phone-prefix-badge">+549</span>
                       <input

@@ -8,7 +8,7 @@ namespace GuardianDigital.Infrastructure.Services;
 
 /// <summary>
 /// Emergency Management Agent responsible for multi-tiered action dispatch based on RiskLevel,
-/// mock family notification broadcasting, emergency services dispatch countdown,
+/// family notification broadcasting, emergency services dispatch countdown,
 /// and first-responder Rescue Medical Sheet access.
 /// </summary>
 public class EmergencyManagementService : IEmergencyManagementService
@@ -35,7 +35,7 @@ public class EmergencyManagementService : IEmergencyManagementService
 
         if (incident == null)
         {
-            throw new KeyNotFoundException($"Incident with ID '{incidentId}' was not found.");
+            throw new KeyNotFoundException($"No se encontró el incidente con ID '{incidentId}'.");
         }
 
         var contacts = await _db.EmergencyContacts
@@ -50,8 +50,8 @@ public class EmergencyManagementService : IEmergencyManagementService
         _agentLogger.Log(
             agentName: "EmergencyManagementAgent",
             cycleStage: "Observation",
-            message: $"Evaluating action dispatch protocol for Incident #{incident.Id} (Risk Level: {incident.RiskLevel}).",
-            details: $"Origin: {incident.Origin} | Description: '{incident.OriginalDescription}' | Contacts on file: {contacts.Count}",
+            message: $"Evaluando protocolo de despacho de acciones para Incidente #{incident.Id} (Nivel de Riesgo: {incident.RiskLevel}).",
+            details: $"Origen: {incident.Origin} | Descripción: '{incident.OriginalDescription}' | Contactos registrados: {contacts.Count}",
             incidentId: incident.Id
         );
 
@@ -65,14 +65,14 @@ public class EmergencyManagementService : IEmergencyManagementService
                     IncidentId = incident.Id,
                     ActionType = ActionType.GeneralRecommendation,
                     Timestamp = DateTime.UtcNow,
-                    Result = "General care guidance issued: Rest in a quiet environment, maintain hydration, and monitor vital signs. Non-urgent medical appointment request enabled."
+                    Result = "Recomendación de cuidado general emitida: Descansar en un entorno tranquilo, mantener buena hidratación y observar signos vitales. Opción de solicitud de turno médico no urgente habilitada."
                 };
                 dispatchedActions.Add(mildAction);
 
                 _agentLogger.Log(
                     agentName: "EmergencyManagementAgent",
                     cycleStage: "Analysis",
-                    message: "Mild risk protocol: General health recommendation generated. Non-urgent appointment option active.",
+                    message: "Protocolo de riesgo leve: Recomendación general de salud generada. Turno facultativo disponible.",
                     details: mildAction.Result,
                     incidentId: incident.Id
                 );
@@ -82,14 +82,14 @@ public class EmergencyManagementService : IEmergencyManagementService
                 // Action 1: Simulated Notification to Emergency Contacts
                 var contactSummary = contacts.Count > 0
                     ? string.Join(", ", contacts.Select(c => $"{c.ContactName} [{c.Relationship}]: {c.Phone} ({c.PreferredMethod})"))
-                    : "Primary family contacts (Default emergency list)";
+                    : "Contactos familiares principales (Lista predeterminada de emergencias)";
 
                 var urgentNotifyAction = new ActionExecuted
                 {
                     IncidentId = incident.Id,
                     ActionType = ActionType.NotifyFamily,
                     Timestamp = DateTime.UtcNow,
-                    Result = $"Simulated emergency notification sent to contacts: {contactSummary}. Message: 'Urgent health alert for patient. Clinical accompaniment advised.'"
+                    Result = $"Notificación de alerta enviada a contactos de emergencia: {contactSummary}. Mensaje: 'Alerta médica urgente para el paciente. Se aconseja acompañamiento y evaluación clínica.'"
                 };
                 dispatchedActions.Add(urgentNotifyAction);
 
@@ -99,14 +99,14 @@ public class EmergencyManagementService : IEmergencyManagementService
                     IncidentId = incident.Id,
                     ActionType = ActionType.GeneralRecommendation,
                     Timestamp = DateTime.UtcNow,
-                    Result = "Clinical travel guidance: Proceed to nearest urgent care center or medical clinic with an accompanying person. Do not drive or walk alone if dizziness/weakness persists."
+                    Result = "Indicación de traslado emitida: Dirigirse a una guardia o centro médico de urgencias con una persona acompañante. Evitar conducir si persisten mareos o debilidad."
                 };
                 dispatchedActions.Add(urgentTravelAction);
 
                 _agentLogger.Log(
                     agentName: "EmergencyManagementAgent",
                     cycleStage: "Analysis",
-                    message: $"Urgent risk protocol: Broadcasted simulated notifications to {contacts.Count} contact(s) and issued clinic travel guidance.",
+                    message: $"Protocolo de riesgo urgente: Notificaciones simuladas enviadas a {contacts.Count} contacto(s) e indicación de traslado clínico emitida.",
                     details: urgentNotifyAction.Result,
                     incidentId: incident.Id
                 );
@@ -120,31 +120,31 @@ public class EmergencyManagementService : IEmergencyManagementService
                 // Action 1: High-Priority Emergency Broadcast to ALL Contacts
                 var allContactsStr = contacts.Count > 0
                     ? string.Join(", ", contacts.Select(c => $"{c.ContactName} ({c.Phone})"))
-                    : "All registered emergency contacts";
+                    : "Todos los contactos de emergencia registrados";
 
                 var emergencyNotifyAction = new ActionExecuted
                 {
                     IncidentId = incident.Id,
                     ActionType = ActionType.NotifyFamily,
                     Timestamp = DateTime.UtcNow,
-                    Result = $"EMERGENCY PROTOCOL ACTIVATED: High-priority broadcast dispatched to ALL emergency contacts ({allContactsStr}). First responder rescue telemetry activated."
+                    Result = $"PROTOCOLO DE EMERGENCIA CRÍTICA ACTIVADO: Difusión de máxima prioridad enviada a TODOS los contactos ({allContactsStr}). Telemetría de rescate habilitada para primeros intervinientes."
                 };
                 dispatchedActions.Add(emergencyNotifyAction);
 
-                // Action 2: Contact Emergency Services (911 / EMS) with 30s Countdown
+                // Action 2: Contact Emergency Services (911 / 107 / EMS) with 30s Countdown
                 var emergencyServicesAction = new ActionExecuted
                 {
                     IncidentId = incident.Id,
                     ActionType = ActionType.ContactEmergencyServices,
                     Timestamp = DateTime.UtcNow,
-                    Result = "EMERGENCY SERVICES DISPATCH: Automated 911 / EMS ambulance dispatch countdown initiated (30-second cancellation window). Rescue Medical Sheet exposed for first responders."
+                    Result = "DESPACHO DE EMERGENCIAS (107 / SAME / 911): Cuenta regresiva de 30 segundos iniciada para el despacho automático de ambulancia. Ficha Médica de Rescate expuesta para paramédicos."
                 };
                 dispatchedActions.Add(emergencyServicesAction);
 
                 _agentLogger.Log(
                     agentName: "EmergencyManagementAgent",
                     cycleStage: "Analysis",
-                    message: "POSSIBLE EMERGENCY PROTOCOL TRIGGERED: Notified all emergency contacts and initiated 911 dispatch countdown.",
+                    message: "PROTOCOLO DE POSIBLE EMERGENCIA ACTIVADO: Contactos notificados e inicio de cuenta regresiva para ambulancia.",
                     details: emergencyServicesAction.Result,
                     incidentId: incident.Id
                 );
@@ -164,8 +164,8 @@ public class EmergencyManagementService : IEmergencyManagementService
         _agentLogger.Log(
             agentName: "EmergencyManagementAgent",
             cycleStage: "Decision",
-            message: $"Incident #{incident.Id} transitioned to 'ActionTaken'. {dispatchedActions.Count} automated actions executed.",
-            details: $"Emergency Protocol: {emergencyProtocolActivated} | Countdown: {countdownSeconds?.ToString() ?? "N/A"}s",
+            message: $"Incidente #{incident.Id} transicionado a 'ActionTaken' (Acción Ejecutada). {dispatchedActions.Count} acciones automáticas ejecutadas.",
+            details: $"Protocolo de Emergencia: {emergencyProtocolActivated} | Cuenta Regresiva: {countdownSeconds?.ToString() ?? "N/A"}s",
             incidentId: incident.Id
         );
 
@@ -187,7 +187,7 @@ public class EmergencyManagementService : IEmergencyManagementService
 
         if (incident == null)
         {
-            throw new KeyNotFoundException($"Incident with ID '{incidentId}' was not found.");
+            throw new KeyNotFoundException($"No se encontró el incidente con ID '{incidentId}'.");
         }
 
         var user = await _db.Users
@@ -212,18 +212,18 @@ public class EmergencyManagementService : IEmergencyManagementService
             IncidentDescription: incident.OriginalDescription,
             IncidentTimestamp: incident.Timestamp,
             PatientId: user?.Id ?? Guid.Empty,
-            PatientFullName: user?.FullName ?? "Unknown Patient",
-            NationalId: user?.NationalId ?? "N/A",
+            PatientFullName: user?.FullName ?? "Paciente Desconocido",
+            NationalId: user?.NationalId ?? "S/D",
             Age: age,
-            Gender: user?.Gender ?? "Unknown",
-            PrimaryPhone: user?.PrimaryPhone ?? "N/A",
-            Address: user?.Address ?? "N/A",
-            HealthInsurance: user?.HealthInsurance ?? "None specified",
-            BloodType: user?.BloodType?.Value ?? "Unknown",
+            Gender: user?.Gender ?? "No especificado",
+            PrimaryPhone: user?.PrimaryPhone ?? "S/D",
+            Address: user?.Address ?? "S/D",
+            HealthInsurance: user?.HealthInsurance ?? "Particular / Sin especificar",
+            BloodType: user?.BloodType?.Value ?? "Desconocido",
             KnownAllergies: medProfile?.KnownAllergies ?? new List<string>(),
             PreexistingConditions: medProfile?.PreexistingConditions ?? new List<string>(),
             CurrentMedication: medProfile?.CurrentMedication ?? new List<string>(),
-            MedicalHistory: medProfile?.MedicalHistory ?? "No detailed history available",
+            MedicalHistory: medProfile?.MedicalHistory ?? "Sin antecedentes relevantes registrados",
             EmergencyContacts: contacts.Select(c => new RescueContactDto(c.ContactName, c.Relationship, c.Phone, c.PreferredMethod.ToString())).ToList(),
             GeneratedAt: DateTime.UtcNow
         );
@@ -237,7 +237,7 @@ public class EmergencyManagementService : IEmergencyManagementService
 
         if (incident == null)
         {
-            throw new KeyNotFoundException($"Incident with ID '{incidentId}' was not found.");
+            throw new KeyNotFoundException($"No se encontró el incidente con ID '{incidentId}'.");
         }
 
         var appointmentAction = new ActionExecuted
@@ -245,7 +245,7 @@ public class EmergencyManagementService : IEmergencyManagementService
             IncidentId = incident.Id,
             ActionType = ActionType.RequestMedicalAppointment,
             Timestamp = DateTime.UtcNow,
-            Result = $"Non-urgent medical appointment booked with primary care network. Follow-up notes: \"{notes ?? "Patient requested checkup following mild symptom report."}\""
+            Result = $"Turno médico de chequeo solicitado a la red ambulatoria. Notas de seguimiento: \"{notes ?? "El paciente solicitó revisión tras reporte de molestia leve."}\""
         };
 
         _db.ActionsExecuted.Add(appointmentAction);
@@ -254,7 +254,7 @@ public class EmergencyManagementService : IEmergencyManagementService
         _agentLogger.Log(
             agentName: "EmergencyManagementAgent",
             cycleStage: "Decision",
-            message: $"Medical appointment scheduled for Incident #{incident.Id}.",
+            message: $"Turno médico programado para Incidente #{incident.Id}.",
             details: appointmentAction.Result,
             incidentId: incident.Id
         );

@@ -381,7 +381,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Documento de Identidad (DNI) * (Máx. 9 dígitos)</label>
+            <label>Documento de Identidad (DNI) *</label>
             <input
               type="text"
               inputMode="numeric"
@@ -412,7 +412,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="form-field">
-            <label>Teléfono Principal de Contacto * (10 dígitos)</label>
+            <label>Teléfono Principal de Contacto *</label>
             <div className="phone-input-wrapper">
               <span className="phone-prefix-badge">+549</span>
               <input
@@ -624,7 +624,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
 
                 <div className="form-field">
-                  <label>Teléfono Directo * (10 dígitos)</label>
+                  <label>Teléfono Directo * </label>
                   <div className="phone-input-wrapper">
                     <span className="phone-prefix-badge">+549</span>
                     <input

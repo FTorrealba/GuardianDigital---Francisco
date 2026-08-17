@@ -43,7 +43,7 @@ public class ReportSymptomTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("possible_emergency", result.SuggestedUrgencyLevel);
-        Assert.Contains(result.DetectedSymptoms, s => s.Contains("chest", StringComparison.OrdinalIgnoreCase) || s.Contains("discomfort", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.DetectedSymptoms, s => s.Contains("torácica", StringComparison.OrdinalIgnoreCase) || s.Contains("pecho", StringComparison.OrdinalIgnoreCase) || s.Contains("chest", StringComparison.OrdinalIgnoreCase) || s.Contains("discomfort", StringComparison.OrdinalIgnoreCase));
         Assert.NotEmpty(result.SuggestedQuestions);
         Assert.InRange(result.SuggestedQuestions.Count, 1, 3);
         Assert.NotEmpty(result.ConversationalResponse);
