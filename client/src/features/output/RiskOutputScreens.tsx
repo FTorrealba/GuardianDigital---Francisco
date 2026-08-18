@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './RiskOutputScreens.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface RescueSheetData {
   incidentId?: string;
@@ -67,7 +68,7 @@ export const RiskOutputScreens: React.FC<RiskOutputScreensProps> = ({ activeUser
   // Fetch active user profile if activeUserId provided
   useEffect(() => {
     if (activeUserId) {
-      fetch(`http://localhost:5000/api/users/${activeUserId}`)
+      fetch(`${API_BASE_URL}/api/users/${activeUserId}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((user) => {
           if (user) {
@@ -99,14 +100,14 @@ export const RiskOutputScreens: React.FC<RiskOutputScreensProps> = ({ activeUser
   // Fetch real incidents from backend
   useEffect(() => {
     const url = activeUserId
-      ? `http://localhost:5000/api/incidents?userId=${activeUserId}`
-      : 'http://localhost:5000/api/incidents';
+      ? `${API_BASE_URL}/api/incidents?userId=${activeUserId}`
+      : `${API_BASE_URL}/api/incidents`;
     fetch(url)
       .then((res) => res.json())
       .then((incidents: IncidentDto[]) => {
         if (incidents && incidents.length > 0) {
           const latest = incidents[0];
-          fetch(`http://localhost:5000/api/incidents/${latest.id}/rescue-sheet`)
+          fetch(`${API_BASE_URL}/api/incidents/${latest.id}/rescue-sheet`)
             .then((r) => (r.ok ? r.json() : null))
             .then((data) => {
               if (data) {
@@ -136,11 +137,11 @@ export const RiskOutputScreens: React.FC<RiskOutputScreensProps> = ({ activeUser
   const handleRequestAppointment = async () => {
     setAppointmentRequested(true);
     try {
-      await fetch('http://localhost:5000/api/incidents', { method: 'GET' })
+      await fetch(`${API_BASE_URL}/api/incidents`, { method: 'GET' })
         .then((res) => res.json())
         .then(async (incidents) => {
           if (incidents && incidents.length > 0) {
-            await fetch(`http://localhost:5000/api/incidents/${incidents[0].id}/request-appointment`, {
+            await fetch(`${API_BASE_URL}/api/incidents/${incidents[0].id}/request-appointment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ notes: 'Solicitud desde pantalla de salida (Situación Leve)' })

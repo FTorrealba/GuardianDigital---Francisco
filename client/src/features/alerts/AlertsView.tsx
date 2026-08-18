@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Alerts.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface IncidentDto {
   id: string;
@@ -76,11 +77,11 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
   const fetchData = async () => {
     try {
       const incUrl = filterByUser && activeUserId
-        ? `http://localhost:5000/api/incidents?userId=${activeUserId}`
-        : 'http://localhost:5000/api/incidents';
+        ? `${API_BASE_URL}/api/incidents?userId=${activeUserId}`
+        : `${API_BASE_URL}/api/incidents`;
       const [incRes, logRes] = await Promise.all([
         fetch(incUrl),
-        fetch('http://localhost:5000/api/incidents/agent-logs?count=40'),
+        fetch(`${API_BASE_URL}/api/incidents/agent-logs?count=40`),
       ]);
 
       if (incRes.ok) {
@@ -101,7 +102,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
 
   const handleEvaluateStatus = async (id: string, newStatus: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/evaluate`, {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newStatus, note: 'Evaluación manual desde el panel' }),
@@ -118,7 +119,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
   const handleMedicalEvaluation = async (id: string) => {
     setEvaluatingId(id);
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/evaluate-medical`, {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/evaluate-medical`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -136,7 +137,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
   const handleDispatchActions = async (id: string) => {
     setDispatchingId(id);
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/dispatch-actions`, {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/dispatch-actions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -153,7 +154,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
 
   const handleRequestAppointment = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/request-appointment`, {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/request-appointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: 'Turno médico programado desde el panel de incidentes' }),
@@ -175,7 +176,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
     if (reason === null) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/false-alarm`, {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/false-alarm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason }),
@@ -192,7 +193,7 @@ export const AlertsView: React.FC<AlertsViewProps> = ({ activeUserId, activeUser
   const handleViewRescueSheet = async (id: string) => {
     setLoadingSheet(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/incidents/${id}/rescue-sheet`);
+      const res = await fetch(`${API_BASE_URL}/api/incidents/${id}/rescue-sheet`);
       if (res.ok) {
         const sheetData: RescueSheetData = await res.json();
         setActiveRescueSheet(sheetData);

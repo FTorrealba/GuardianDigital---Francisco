@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Onboarding.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface EmergencyContactForm {
   contactName: string;
@@ -205,7 +206,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
 
     try {
       // 1. Single transaction POST to backend
-      const res = await fetch('http://localhost:5000/api/users', {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -218,7 +219,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onUserCreated })
       }
 
       // 2. Fetch full profile from backend to verify DB persistence
-      const getRes = await fetch(`http://localhost:5000/api/users/${data.id}`);
+      const getRes = await fetch(`${API_BASE_URL}/api/users/${data.id}`);
       if (getRes.ok) {
         const fullProfile = await getRes.json();
         setRegisteredUser(fullProfile);

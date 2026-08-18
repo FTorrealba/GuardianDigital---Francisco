@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Assistant.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface SymptomResponse {
   incidentId: string;
@@ -59,7 +60,7 @@ export const AssistantView: React.FC<AssistantViewProps> = ({ activeUserId, acti
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/incidents/report-symptom', {
+      const res = await fetch(`${API_BASE_URL}/api/incidents/report-symptom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, origin, userId: activeUserId || undefined }),

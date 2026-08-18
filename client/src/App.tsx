@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import { API_BASE_URL } from './config/api';
 import { OnboardingView } from './features/onboarding/OnboardingView';
 import { ProfileView } from './features/profile/ProfileView';
 import { DashboardView } from './features/dashboard/DashboardView';
@@ -57,7 +58,7 @@ export function App() {
   const checkHealth = () => {
     setLoading(true);
     setError(null);
-    fetch('http://localhost:5000/health')
+    fetch(`${API_BASE_URL}/health`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`El servidor devolvió HTTP ${res.status}`);
@@ -76,7 +77,7 @@ export function App() {
   };
 
   const fetchUsers = (preferredUserId?: string) => {
-    fetch('http://localhost:5000/api/users')
+    fetch(`${API_BASE_URL}/api/users`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data: UserSummaryDto[]) => {
         setUsers(data);
@@ -100,7 +101,7 @@ export function App() {
   };
 
   const handleProfileDeleted = () => {
-    fetch('http://localhost:5000/api/users')
+    fetch(`${API_BASE_URL}/api/users`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data: UserSummaryDto[]) => {
         setUsers(data);

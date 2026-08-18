@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface ReadingDto {
   id: string;
@@ -53,7 +54,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ activeUserId: _act
 
   const fetchDevices = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/devices');
+      const res = await fetch(`${API_BASE_URL}/api/devices`);
       if (res.ok) {
         const data: DeviceDto[] = await res.json();
         setDevices(data);
@@ -68,7 +69,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ activeUserId: _act
 
   const fetchLearningStats = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/learning/stats');
+      const res = await fetch(`${API_BASE_URL}/api/learning/stats`);
       if (res.ok) {
         const stats: LearningStatsDto = await res.json();
         setLearningStats(stats);
@@ -81,7 +82,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ activeUserId: _act
   const seedDevices = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/devices/seed', { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/devices/seed`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Error al inicializar dispositivos');
@@ -97,7 +98,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ activeUserId: _act
 
   const injectAnomaly = async (anomalyType: string, deviceId?: string) => {
     try {
-      const res = await fetch('http://localhost:5000/api/devices/inject-anomaly', {
+      const res = await fetch(`${API_BASE_URL}/api/devices/inject-anomaly`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId, anomalyType }),

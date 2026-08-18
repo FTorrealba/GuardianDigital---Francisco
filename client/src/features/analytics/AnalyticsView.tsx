@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Analytics.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface ReadingDto {
   id: string;
@@ -72,10 +73,10 @@ export const AnalyticsView: React.FC = () => {
   const fetchData = async () => {
     try {
       const [devRes, incRes, logRes, learnRes] = await Promise.all([
-        fetch('http://localhost:5000/api/devices'),
-        fetch('http://localhost:5000/api/incidents'),
-        fetch('http://localhost:5000/api/incidents/agent-logs?count=30'),
-        fetch('http://localhost:5000/api/learning/stats'),
+        fetch(`${API_BASE_URL}/api/devices`),
+        fetch(`${API_BASE_URL}/api/incidents`),
+        fetch(`${API_BASE_URL}/api/incidents/agent-logs?count=30`),
+        fetch(`${API_BASE_URL}/api/learning/stats`),
       ]);
 
       if (devRes.ok) setDevices(await devRes.json());

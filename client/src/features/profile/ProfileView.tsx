@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Profile.css';
+import { API_BASE_URL } from '../../config/api';
 
 interface EmergencyContactForm {
   id?: string;
@@ -90,7 +91,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setSaveSuccess(false);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${activeUserId}`);
+      const res = await fetch(`${API_BASE_URL}/api/users/${activeUserId}`);
       if (res.ok) {
         const user: UserProfileData = await res.json();
         setFullName(user.fullName);
@@ -248,7 +249,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
     setSaving(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${activeUserId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${activeUserId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -274,7 +275,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setErrorMsg(null);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${activeUserId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/${activeUserId}`, {
         method: 'DELETE',
       });
 
